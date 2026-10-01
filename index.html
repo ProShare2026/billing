@@ -421,15 +421,64 @@ function transferRow(otherId, amount, dir){
   const sub = checked ? (dir === 'pay' ? 'Bạn đã check, chưa trả' : 'Đã check, chưa trả') : (dir === 'pay' ? 'Chạm để xem thông tin trả' : 'Chạm để xem chi tiết');
   return `<button class="row" data-act="openPerson" data-id="${otherId}" data-dir="${dir}" data-amt="${amount}">${av(otherId)}<span class="grow"><span class="t">${esc(mName(otherId))}</span><span class="s">${sub}</span></span><span class="amt-wrap"><span class="amt ${dir==='pay'?'neg':'pos'}" style="display:block">${fmt(amount)}</span><span class="pill ${dir==='pay'?'owe':'owed'}">${dir==='pay'?'bạn nợ':'nợ bạn'}</span></span></button>`;
 }
+function monthStats(month){
+  const bills = S.bills.filter(b => !b.draft && (month === 'all' || (b.date || '').startsWith(month)));
+  let total = 0, mine = 0; const byPayer = {}, byPlace = {};
+  for (const b of bills){
+    const c = computeBill(b); total += c.total;
+    if (S.me && c.raw[S.me]) mine += b.payerId === S.me ? c.raw[S.me] : (c.owes[S.me] || 0);
+    byPayer[b.payerId] = (byPayer[b.payerId] || 0) + c.total;
+    const k = (b.merchant || 'Bữa ăn').trim(); byPlace[k] = (byPlace[k] || 0) + 1;
+  }
+  const topPayer = Object.entries(byPayer).sort((x, y) => y[1] - x[1])[0];
+  const topPlace = Object.entries(byPlace).sort((x, y) => y[1] - x[1])[0];
+  return { n: bills.length, total, mine, topPayer, topPlace };
+}
+function exportCSV(){
+  const month = S.month;
+  const debts = billDebts();
+  const st = {}; debts.forEach(d => st[d.billId + '|' + d.from] = d);
+  const rows = [['Ngày', 'Quán / bữa', 'Người trả bill', 'Phương thức', 'Tổng bill', 'Thành viên', 'Phần phải trả', 'Đã trả', 'Còn lại', 'Ghi chú']];
+  const bills = S.bills.filter(b => month === 'all' || (b.date || '').startsWith(month)).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+  for (const b of bills){
+    const c = computeBill(b);
+    if (b.draft) { rows.push([b.date, b.merchant || 'Bữa ăn', mName(b.payerId), METHODS[b.method] || '', Math.round(c.total), '', '', '', '', 'Bill nháp, chưa chia']); continue; }
+    for (const mid of Object.keys(c.raw)){
+      if (mid === b.payerId) { rows.push([b.date, b.merchant || 'Bữa ăn', mName(b.payerId), METHODS[b.method] || '', Math.round(c.total), mName(mid), Math.round(c.raw[mid]), '', '', 'Người trả bill']); continue; }
+      const d = st[b.id + '|' + mid];
+      rows.push([b.date, b.merchant || 'Bữa ăn', mName(b.payerId), METHODS[b.method] || '', Math.round(c.total), mName(mid), c.owes[mid] || 0, d ? Math.round(d.paid) : 0, d ? d.remaining : 0, d && d.remaining === 0 ? 'Đã trả' : '']);
+    }
+  }
+  rows.push([]); rows.push(['Thanh toán đã ghi']); rows.push(['Ngày', 'Người trả', 'Người nhận', 'Số tiền', 'Loại', 'Bill']);
+  S.payments.filter(p => month === 'all' || (p.date || '').startsWith(month)).sort((a, b) => (a.date || '').localeCompare(b.date || '')).forEach(p => {
+    const bill = p.billId ? S.bills.find(b => b.id === p.billId) : null;
+    rows.push([p.date, mName(p.from), mName(p.to), Math.round(p.amount), p.billId ? 'Theo bill' : 'Gộp', bill ? (bill.merchant || 'Bữa ăn') + ' ' + fmtDate(bill.date) : '']);
+  });
+  const csv = '\ufeff' + rows.map(r => r.map(v => { const x = String(v ?? ''); return /[",\n;]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x; }).join(',')).join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `an-chung-${month === 'all' ? 'tat-ca' : month}.csv`;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  toast('Đã xuất file CSV (mở được bằng Excel, Google Sheets)');
+}
 function viewBills(){
   const months = [...new Set(S.bills.map(b => (b.date || '').slice(0, 7)).filter(Boolean))].sort().reverse();
   const list = S.bills.filter(b => S.month === 'all' || (b.date || '').startsWith(S.month)).sort((a, b) => (b.date || '').localeCompare(a.date || '') || (b.createdAt || 0) - (a.createdAt || 0));
-  return `${localBanner()}<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px"><h2 style="margin:10px 0">Lịch sử bill</h2>
-  <select class="in" style="width:auto" data-f="month"><option value="all">Tất cả</option>${months.map(m => `<option value="${m}" ${S.month===m?'selected':''}>Tháng ${m.slice(5)}/${m.slice(0,4)}</option>`).join('')}</select></div>` +
-  (list.length ? `<div class="list">${list.map(b => { const c = computeBill(b); return `<button class="row" data-act="openBill" data-id="${b.id}">${av(b.payerId)}<span class="grow"><span class="t">${esc(b.merchant || 'Bữa ăn')}</span><span class="s">${b.draft ? '<span class="pill" style="background:var(--sun-soft);margin:0 4px 0 0">nháp</span>' : ''}${fmtDate(b.date)} · ${esc(mName(b.payerId))} trả · ${(b.items||[]).length} món</span></span><span class="amt">${fmt(c.total)}</span></button>`; }).join('')}</div>`
-  : `<div class="empty">Chưa có bill nào. Bấm nút Thêm để ghi bữa ăn đầu tiên.</div>`);
+  const st = monthStats(S.month);
+  const stats = st.n ? `<div class="card" style="padding:14px 16px;margin-bottom:6px">
+    <div class="grid2">
+      <div><div class="small muted">Cả nhóm đã ăn</div><div style="font-size:20px;font-weight:800">${fmt(st.total)}</div><div class="small muted">${st.n} bữa</div></div>
+      <div><div class="small muted">Phần của bạn</div><div style="font-size:20px;font-weight:800">${fmt(st.mine)}</div><div class="small muted">${st.n ? 'TB ' + fmt(st.mine / st.n) + '/bữa' : ''}</div></div>
+    </div>
+    <div class="kv" style="margin-top:10px;border-top:1px solid var(--line);padding-top:10px"><span class="muted">Trả bill nhiều nhất</span><b>${st.topPayer ? esc(mName(st.topPayer[0])) + ' · ' + fmt(st.topPayer[1]) : ''}</b></div>
+    <div class="kv"><span class="muted">Quán hay đi nhất</span><b>${st.topPlace ? esc(st.topPlace[0]) + ' · ' + st.topPlace[1] + ' lần' : ''}</b></div>
+  </div>` : '';
+  return `${localBanner()}<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px"><h2 style="margin:10px 4px">Lịch sử bill</h2>
+  <select class="in" style="width:auto" data-f="month"><option value="all">Tất cả</option>${months.map(m => `<option value="${m}" ${S.month===m?'selected':''}>Tháng ${m.slice(5)}/${m.slice(0,4)}</option>`).join('')}</select></div>
+  ${stats}
+  ${list.length ? `<div class="list">${list.map(b => { const c = computeBill(b); return `<button class="row" data-act="openBill" data-id="${b.id}">${av(b.payerId)}<span class="grow"><span class="t">${esc(b.merchant || 'Bữa ăn')}</span><span class="s">${b.draft ? '<span class="pill" style="background:var(--sun-soft);margin:0 4px 0 0">nháp</span>' : ''}${fmtDate(b.date)} · ${esc(mName(b.payerId))} trả · ${(b.items||[]).length} món</span></span><span class="amt">${fmt(c.total)}</span></button>`; }).join('')}</div>
+  <button class="btn sec full" style="margin-top:14px" data-act="exportCSV">Xuất CSV ${S.month === 'all' ? '(tất cả)' : 'tháng ' + S.month.slice(5) + '/' + S.month.slice(0, 4)}</button>`
+  : `<div class="empty">Chưa có bill nào. Bấm nút Thêm để ghi bữa ăn đầu tiên.</div>`}`;
 }
-
 function viewMembers(){
   const L = ledger();
   return `${localBanner()}<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px"><h2 style="margin:10px 0">Thành viên (${S.members.length})</h2><button class="btn" data-act="editMember">Thêm người</button></div>` +
@@ -438,7 +487,7 @@ function viewMembers(){
 }
 
 function viewAsk(){
-  if (!sample) return `<h2>Hỏi về công nợ</h2><div class="empty">Chưa bật AI. Thêm ANTHROPIC_API_KEY trong Script Properties của Apps Script để dùng tính năng này.</div>`;
+  if (!sample) return `<h2>Hỏi về công nợ</h2><div class="empty">Chưa bật AI. Thêm GEMINI_API_KEY trong Thuộc tính tập lệnh của Apps Script để dùng tính năng này.</div>`;
   const chips = ['Ai đang nợ mình?', 'Mình cần trả ai, bao nhiêu?', 'Tháng này ai trả tiền nhiều nhất?', 'Mình đã ăn gì ở bill gần nhất?'];
   return `<h2>Hỏi về công nợ</h2><p class="muted small">Hỏi bằng tiếng Việt thường ngày. Câu trả lời dựa trên bill và thanh toán của nhóm.</p>
   <div class="chat">${S.chat.map(m => `<div class="msg ${m.role==='user'?'u':'a'}">${esc(m.content)}</div>`).join('')}<span id="chatEnd"></span></div>
@@ -727,6 +776,7 @@ ${text ? 'Nội dung:\n' + text : 'Đọc ảnh hoá đơn đính kèm.'}`;
 function sampleErr(e){
   const c = e && (e.code || e.error);
   if (c === 'ai_disabled') return 'AI chưa được bật trong Apps Script.';
+  if (typeof c === 'string' && c.indexOf('ai_error_429') === 0) return 'Đã hết lượt AI miễn phí trong lúc này. Thử lại sau ít phút hoặc nhập tay.';
   if (c === 'not_granted') return 'Bạn chưa cho phép dùng AI. Hãy nhập tay hoặc dùng Tách nhanh.';
   if (c === 'rate_limited') return 'AI đang bận. Đợi một lúc rồi thử lại.';
   if (c === 'image_rejected') return 'Ảnh không đọc được (định dạng hoặc dung lượng). Thử chụp lại.';
@@ -804,6 +854,7 @@ document.addEventListener('click', async ev => {
     }
     case 'undoPay': if (confirm('Đánh dấu khoản này là chưa nhận được? Số nợ sẽ quay lại.')) { if (await safe(store.del('payments', id), 'Đã mở lại khoản nợ')) closeSheet(); } break;
     case 'openBill': openBill(id); break;
+    case 'exportCSV': exportCSV(); break;
     case 'editBill': { const b = S.bills.find(x => x.id === id); closeSheet(); openEditor(b); break; }
     case 'delBill': if (confirm('Xoá bill này? Các khoản nợ từ bill sẽ mất theo.')) { if (await safe(store.del('bills', id), 'Đã xoá bill')) closeSheet(); } break;
     case 'editMember': openMemberForm(id); break;
