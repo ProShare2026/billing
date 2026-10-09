@@ -187,7 +187,12 @@ textarea.in{min-height:100px;resize:vertical}
 <body>
 <header class="top">
   <div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M3 12h18a9 9 0 0 1-18 0z"/><path d="M9 3c-1 2 1 3 0 5M14 3c-1 2 1 3 0 5"/></svg></span>Ăn chung</div>
-  <button class="who" id="who" data-act="pickMe"></button>
+  <div style="display:flex; gap:8px;">
+    <button class="btn ghost" style="padding:6px; min-height:0" data-act="reload" aria-label="Tải lại">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+    </button>
+    <button class="who" id="who" data-act="pickMe"></button>
+  </div>
 </header>
 <div id="sync" style="display:none;max-width:560px;margin:0 auto 4px;padding:0 16px;font-size:12px;color:var(--muted)"></div>
 <main class="wrap" id="view"></main>
@@ -267,9 +272,9 @@ function makeAI(){
 }
 
 /* ---------- data layer ---------- */
-const S = { members: [], bills: [], payments: [], checks: [], me: null, tab: 'home', homeMode: 'bill', month: 'all', chat: [], ready: false, rev: 0, saving: false, needKey: false, loadErr: '' };
+const S = { members: [], bills: [], payments: [], checks: [], me: null, tab: 'home', homeMode: 'bill', month: 'all', billFilter: 'all', chat: [], ready: false, rev: 0, saving: false, needKey: false, loadErr: '' };
 let sample = null, imgOk = false, dbWritable = true;
-try { const ss = JSON.parse(localStorage.getItem('anchung.session') || 'null'); if (ss && ss.memberId && ss.token) { S.me = ss.memberId; S.token = ss.token; } localStorage.removeItem('anchung.me'); const hm = localStorage.getItem('anchung.mode'); if (hm === 'bill' || hm === 'pair') S.homeMode = hm; } catch {}
+try { const ss = JSON.parse(localStorage.getItem('anchung.session') || 'null'); if (ss && ss.memberId && ss.token) { S.me = ss.memberId; S.token = ss.token; } localStorage.removeItem('anchung.me'); const hm = localStorage.getItem('anchung.mode'); if (hm === 'bill' || hm === 'pair' || hm === 'net') S.homeMode = hm; } catch {}
 /* Lưu kiểu "lạc quan": cập nhật màn hình ngay, gửi lên Apps Script ở nền theo hàng đợi.
    Mất mạng thì hàng đợi được giữ trên máy và tự gửi lại khi có mạng. */
 let OUTBOX = []; try { OUTBOX = JSON.parse(localStorage.getItem('anchung.outbox') || '[]'); } catch {}
@@ -422,22 +427,38 @@ function localBanner(){ return ''; }
 function viewHome(){
   if (!S.members.length) return `${localBanner()}<div class="hero"><div class="lbl">Bắt đầu</div><div class="num">Chào team</div><p style="margin:0;opacity:.9">Thêm những người hay đi ăn cùng nhau, rồi ghi bill đầu tiên.</p></div><div class="hero-actions"><button class="btn" data-act="tab" data-tab="members">Thêm thành viên</button></div>`;
   if (!mById(S.me)) return `${localBanner()}<h2>Bạn là ai trong nhóm?</h2><p class="muted small" style="margin:0 4px 10px">Chọn tên của bạn rồi nhập PIN (lần đầu thì tạo PIN).</p><div class="list">${S.members.map(m => `<button class="row" data-act="pickLogin" data-id="${m.id}">${av(m.id)}<span class="grow"><span class="t">${esc(m.name)}</span><span class="s">${m.hasPin ? 'Đã có PIN' : 'Chưa có PIN'}</span></span></button>`).join('')}</div>`;
-  const seg = `<div class="seg" role="tablist" style="margin-top:20px"><button class="${S.homeMode==='bill'?'on':''}" data-act="homeMode" data-v="bill">Trả từng bill</button><button class="${S.homeMode==='pair'?'on':''}" data-act="homeMode" data-v="pair">Gộp rồi trả</button></div>`;
+  
+  const seg = `<div class="seg" role="tablist" style="margin-top:20px; flex-wrap:wrap; gap:4px">
+    <button class="${S.homeMode==='bill'?'on':''}" style="flex: 1 1 auto" data-act="homeMode" data-v="bill">Từng bill</button>
+    <button class="${S.homeMode==='pair'?'on':''}" style="flex: 1 1 auto" data-act="homeMode" data-v="pair">Cặp người</button>
+    <button class="${S.homeMode==='net'?'on':''}" style="flex: 1 1 auto" data-act="homeMode" data-v="net">Gộp chung tối ưu</button>
+  </div>`;
+  
   let payHtml, getHtml, sumPay = 0, sumGet = 0, nPay = 0, nGet = 0, note;
   if (S.homeMode === 'bill') {
     const debts = billDebts().filter(d => d.remaining > 0).sort((a, b) => b.date.localeCompare(a.date) || b.created - a.created);
     const pay = debts.filter(d => d.from === S.me), get = debts.filter(d => d.to === S.me);
     sumPay = pay.reduce((s, d) => s + d.remaining, 0); sumGet = get.reduce((s, d) => s + d.remaining, 0); nPay = pay.length; nGet = get.length;
     payHtml = pay.map(d => billDebtRow(d, 'pay')).join(''); getHtml = get.map(d => billDebtRow(d, 'get')).join('');
-    note = 'Mỗi bill trả riêng cho người đã trả bill đó. Muốn cộng dồn nhiều bill rồi trả một lần, chọn "Gộp rồi trả".';
-  } else {
+    note = 'Mỗi bill trả riêng cho người đã trả bill đó.';
+  } else if (S.homeMode === 'pair') {
     const L = ledger();
     const rows = S.members.filter(m => m.id !== S.me).map(m => ({ id: m.id, v: Math.round(L.owe(S.me, m.id)) }));
     const pay = rows.filter(r => r.v > 0).sort((a, b) => b.v - a.v), get = rows.filter(r => r.v < 0).map(r => ({ id: r.id, v: -r.v })).sort((a, b) => b.v - a.v);
     sumPay = pay.reduce((s, r) => s + r.v, 0); sumGet = get.reduce((s, r) => s + r.v, 0); nPay = pay.length; nGet = get.length;
     payHtml = pay.map(r => transferRow(r.id, r.v, 'pay')).join(''); getHtml = get.map(r => transferRow(r.id, r.v, 'get')).join('');
-    note = 'Gộp tất cả bill giữa hai người, bù trừ hai chiều, rồi trả một lần. Chỉ ảnh hưởng cách bạn xem và trả; người khác vẫn có thể trả theo từng bill.';
+    note = 'Gộp tất cả bill giữa 2 người (bù trừ 2 chiều), người kia có thể nhận tiền hộ bill của bạn.';
+  } else {
+    // Chế độ Net-Net (Gộp tối ưu toàn mạng)
+    const L = ledger();
+    const simpleDebts = simplify(L.net); // Đã có sẵn hàm simplify() !
+    const pay = simpleDebts.filter(d => d.from === S.me).map(d => ({ id: d.to, v: d.amount }));
+    const get = simpleDebts.filter(d => d.to === S.me).map(d => ({ id: d.from, v: d.amount }));
+    sumPay = pay.reduce((s, r) => s + r.v, 0); sumGet = get.reduce((s, r) => s + r.v, 0); nPay = pay.length; nGet = get.length;
+    payHtml = pay.map(r => transferRow(r.id, r.v, 'pay')).join(''); getHtml = get.map(r => transferRow(r.id, r.v, 'get')).join('');
+    note = 'Gộp tất toán: Thuật toán tự cấn trừ chéo giữa TẤT CẢ mọi người. Ai âm ròng sẽ trả thẳng cho ai dương ròng để số lần chuyển ít nhất.';
   }
+  
   const heroLbl = sumPay > 0 ? 'Bạn cần trả' : sumGet > 0 ? 'Cần trả bạn' : 'Số dư của bạn';
   const heroNum = sumPay > 0 ? fmt(sumPay) : sumGet > 0 ? fmt(sumGet) : 'Không nợ ai';
   const hero = `<div class="hero"><div class="lbl">${heroLbl}${S.homeMode==='bill' && (nPay||nGet) ? ` · ${sumPay > 0 ? nPay : nGet} khoản` : ''}</div><div class="num">${heroNum}</div>
@@ -506,7 +527,17 @@ function exportCSV(){
 }
 function viewBills(){
   const months = [...new Set(S.bills.map(b => (b.date || '').slice(0, 7)).filter(Boolean))].sort().reverse();
-  const list = S.bills.filter(b => S.month === 'all' || (b.date || '').startsWith(S.month)).sort((a, b) => (b.date || '').localeCompare(a.date || '') || (b.createdAt || 0) - (a.createdAt || 0));
+  
+  // Lọc theo tháng và theo "Bill của tôi"
+  let list = S.bills.filter(b => S.month === 'all' || (b.date || '').startsWith(S.month));
+  if (S.billFilter === 'mine' && S.me) {
+    list = list.filter(b => {
+      const c = computeBill(b);
+      return b.payerId === S.me || (c.owes[S.me] > 0) || (c.raw && c.raw[S.me] > 0);
+    });
+  }
+  list.sort((a, b) => (b.date || '').localeCompare(a.date || '') || (b.createdAt || 0) - (a.createdAt || 0));
+
   const st = monthStats(S.month);
   const stats = st.n ? `<div class="card" style="padding:14px 16px;margin-bottom:6px">
     <div class="grid2">
@@ -516,12 +547,20 @@ function viewBills(){
     <div class="kv" style="margin-top:10px;border-top:1px solid var(--line);padding-top:10px"><span class="muted">Trả bill nhiều nhất</span><b>${st.topPayer ? esc(mName(st.topPayer[0])) + ' · ' + fmt(st.topPayer[1]) : ''}</b></div>
     <div class="kv"><span class="muted">Quán hay đi nhất</span><b>${st.topPlace ? esc(st.topPlace[0]) + ' · ' + st.topPlace[1] + ' lần' : ''}</b></div>
   </div>` : '';
-  return `${localBanner()}<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px"><h2 style="margin:10px 4px">Lịch sử bill</h2>
-  <select class="in" style="width:auto" data-f="month"><option value="all">Tất cả</option>${months.map(m => `<option value="${m}" ${S.month===m?'selected':''}>Tháng ${m.slice(5)}/${m.slice(0,4)}</option>`).join('')}</select></div>
+  
+  return `${localBanner()}<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap"><h2 style="margin:10px 4px 0;flex:1 1 100%">Lịch sử bill</h2>
+  <select class="in" style="flex:1" data-f="billFilter">
+    <option value="all" ${S.billFilter==='all'?'selected':''}>Tất cả</option>
+    <option value="mine" ${S.billFilter==='mine'?'selected':''}>Của tôi</option>
+  </select>
+  <select class="in" style="flex:1" data-f="month">
+    <option value="all">Mọi tháng</option>
+    ${months.map(m => `<option value="${m}" ${S.month===m?'selected':''}>${m.slice(5)}/${m.slice(0,4)}</option>`).join('')}
+  </select></div>
   ${stats}
-  ${list.length ? `<div class="list">${list.map(b => { const c = computeBill(b); return `<button class="row" data-act="openBill" data-id="${b.id}">${av(b.payerId)}<span class="grow"><span class="t">${esc(b.merchant || 'Bữa ăn')}</span><span class="s">${b.draft ? '<span class="pill" style="background:var(--sun-soft);margin:0 4px 0 0">nháp</span>' : ''}${fmtDate(b.date)} · ${esc(mName(b.payerId))} trả · ${(b.items||[]).length} món</span></span><span class="amt">${fmt(c.total)}</span></button>`; }).join('')}</div>
-  <button class="btn sec full" style="margin-top:14px" data-act="exportCSV">Xuất CSV ${S.month === 'all' ? '(tất cả)' : 'tháng ' + S.month.slice(5) + '/' + S.month.slice(0, 4)}</button>`
-  : `<div class="empty">Chưa có bill nào. Bấm nút Thêm để ghi bữa ăn đầu tiên.</div>`}`;
+  ${list.length ? `<div class="list" style="margin-top:10px">${list.map(b => { const c = computeBill(b); return `<button class="row" data-act="openBill" data-id="${b.id}">${av(b.payerId)}<span class="grow"><span class="t">${esc(b.merchant || 'Bữa ăn')}</span><span class="s">${b.draft ? '<span class="pill" style="background:var(--sun-soft);margin:0 4px 0 0">nháp</span>' : ''}${fmtDate(b.date)} · ${esc(mName(b.payerId))} trả · ${(b.items||[]).length} món</span></span><span class="amt">${fmt(c.total)}</span></button>`; }).join('')}</div>
+  <button class="btn sec full" style="margin-top:14px" data-act="exportCSV">Xuất CSV</button>`
+  : `<div class="empty" style="margin-top:10px">Chưa có bill nào.</div>`}`;
 }
 function viewMembers(){
   const L = ledger();
@@ -1041,6 +1080,7 @@ document.addEventListener('contextmenu', ev => { if (ev.target.closest('[data-ac
 document.addEventListener('input', ev => {
   const f = ev.target.dataset.f; if (!f) return;
   if (f === 'month') { S.month = ev.target.value; render(); return; }
+  if (f === 'billFilter') { S.billFilter = ev.target.value; render(); return; }
   if (!E) return;
   const v = ev.target.value;
   if (f === 'text') E.text = v;
