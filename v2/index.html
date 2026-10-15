@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ăn chung · Metro</title>
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Ăn chung β">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+/* Ăn chung v2 · Metro (Windows Phone 8): phẳng, vuông, nền đen, chữ mỏng, ô màu đặc */
+:root{
+  --canvas:#000; --surface:#111; --sunk:#1A1A1A; --ink:#FFF; --muted:#8A8A8A; --line:#2A2A2A;
+  --brand:#1BA1E2; --brand-ink:#FFF; --brand-deep:#0078D7; --brand-soft:#0B2A3A;
+  --owed:#2BBF5B; --owed-soft:#0E361B; --owe:#F0484F; --owe-soft:#3B1214; --sun:#F0A30A; --sun-soft:#3A2A06;
+  --t-green:#107C10; --t-red:#C2141B; --t-cyan:#0078D7; --t-magenta:#D80073; --t-gray:#333;
+  --light:"Open Sans","Segoe UI Light","Segoe UI",system-ui,sans-serif;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%;background:#000}
+*,*::before,*::after{box-sizing:border-box;border-radius:0!important;box-shadow:none!important}
+body{margin:0;min-height:100%;background:#000;color:var(--ink);font-family:"Open Sans","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent;font-feature-settings:"tnum" 1}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.wrap{max-width:480px;margin:0 auto;padding:4px 16px calc(96px + env(safe-area-inset-bottom,0px))}
+/* header + pivot */
+header.top{max-width:480px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;padding:10px 16px 0}
+.app-title{font-size:11px;font-weight:700;letter-spacing:.12em}
+.who{background:none;border:0;color:var(--brand);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:6px 0}
+nav.pivot{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:#000;max-width:480px;margin:0 auto;display:flex;gap:22px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;padding:6px 16px 12px;align-items:baseline}
+nav.pivot::-webkit-scrollbar{display:none}
+nav.pivot button{background:none;border:0;padding:0;font-family:var(--light);font-weight:300;font-size:34px;line-height:1.05;letter-spacing:-.5px;color:#5A5A5A}
+nav.pivot button.on{color:#FFF}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:#000;z-index:10}
+#sync{max-width:480px;margin:0 auto!important;padding:0 16px 6px!important;font-size:11px!important;color:var(--brand)!important;text-transform:lowercase}
+/* app bar */
+.appbar{position:fixed;left:0;right:0;bottom:0;z-index:6;background:#1F1F1F;border-top:1px solid #333;padding-bottom:env(safe-area-inset-bottom,0px)}
+.appbar .in{max-width:480px;margin:0 auto;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 10px}
+.appbar .acts{display:flex;gap:14px}
+.ab{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:3px;width:56px;padding:2px;color:#FFF}
+.ab .c{width:34px;height:34px;border:2px solid #FFF;border-radius:50%!important;display:grid;place-items:center}
+.ab .c svg{width:16px;height:16px;stroke:#FFF;fill:none;stroke-width:2.2}
+.ab:active .c{background:#FFF}.ab:active .c svg{stroke:#000}
+.ab .l{font-size:10px;color:#CCC;text-transform:lowercase;white-space:nowrap}
+.ab-more{background:none;border:0;color:#FFF;font-size:20px;letter-spacing:2px;padding:8px 10px}
+/* tiles */
+.tiles{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.tile{color:#FFF;padding:12px 14px;display:flex;flex-direction:column;justify-content:space-between;border:0;text-align:left;width:100%}
+.tile-top{min-height:124px}
+.tile-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.tile-label{font-size:11px;font-weight:700;letter-spacing:.08em}
+.live{font-size:10px;font-weight:700;letter-spacing:.05em;background:rgba(0,0,0,.35);padding:2px 6px;text-transform:uppercase;white-space:nowrap}
+.tile-amount{font-family:var(--light);font-weight:300;font-size:36px;line-height:1.1;letter-spacing:-.5px;margin-top:10px}
+.tile-sub{display:block;font-size:12px;opacity:.92;margin-top:2px}
+.tiles-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tiles-pair .tile{min-height:112px}
+.tile-sym{font-family:var(--light);font-weight:300;font-size:28px;line-height:1}
+.tile-small-amount{display:block;font-family:var(--light);font-weight:300;font-size:23px;letter-spacing:-.4px;line-height:1.1}
+.t-green{background:var(--t-green)} .t-red{background:var(--t-red)} .t-cyan{background:var(--t-cyan)} .t-magenta{background:var(--t-magenta)} .t-gray{background:var(--t-gray)} .t-accent{background:var(--brand)}
+/* old hero (used by key screen) → accent tile */
+.hero{background:var(--brand);color:#FFF;padding:14px 16px 18px;margin-top:4px}
+.hero .lbl{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.hero .num{font-family:var(--light);font-weight:300;font-size:34px;line-height:1.1;margin:10px 0 6px}
+/* typography */
+h2{font-family:var(--light);font-weight:300;font-size:21px;margin:22px 0 8px;display:flex;align-items:baseline;justify-content:space-between;gap:8px;text-transform:lowercase}
+h2 .count{font-family:"Open Sans",sans-serif;font-size:12px;font-weight:600;color:var(--brand);text-transform:none}
+#sheet h3,.ov-head .ttl{font-family:var(--light);font-weight:300;text-transform:lowercase}
+.muted{color:var(--muted)} .small{font-size:12.5px}
+.pos{color:var(--owed)} .neg{color:var(--owe)}
+/* toggle */
+.seg{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:6px;margin:6px 0 4px}
+.seg button{background:#141414;border:1px solid #333;color:#888;font-size:12px;padding:9px 6px;text-transform:lowercase}
+.seg button.on{background:#1F1F1F;border:1.5px solid var(--brand);color:#FFF;font-weight:600}
+/* lists */
+.list{display:flex;flex-direction:column;gap:2px}
+.row{display:flex;align-items:center;gap:12px;padding:12px 14px;width:100%;background:var(--surface);border:0;border-left:4px solid transparent;text-align:left;position:relative;color:var(--ink)}
+.row:active{background:#1C1C1C}
+.row.owe{border-left-color:var(--owe)} .row.owed{border-left-color:var(--owed)}
+.row .grow{flex:1;min-width:0}
+.row .grow > .t,.row .grow > .s{display:block}
+.row .t{font-size:15px;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .s{font-size:11.5px;color:var(--muted);margin-top:2px}
+.amt{font-family:var(--light);font-weight:400;font-size:17px;letter-spacing:-.3px;white-space:nowrap}
+.amt-wrap{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.pill{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 5px;background:#222;color:#CCC}
+.pill.owe{background:var(--owe-soft);color:#FFA4A8} .pill.owed{background:var(--owed-soft);color:#72E396}
+.empty{padding:18px 14px;color:var(--muted);background:var(--surface);font-size:13px}
+/* avatars: ô vuông màu đặc */
+.av{--c:#555;flex:none;display:inline-grid;place-items:center;width:38px;height:38px;background:var(--c);color:#FFF;font-weight:600;font-size:15px;line-height:1}
+.av.s{width:22px;height:22px;font-size:10px}
+.av.l{width:52px;height:52px;font-size:20px}
+/* buttons, fields */
+.btn{border:2px solid var(--brand);padding:11px 14px;font-weight:600;background:var(--brand);color:#FFF;min-height:46px;text-transform:lowercase}
+.btn.sec{background:transparent;border-color:#FFF;color:#FFF}
+.btn.red{background:var(--t-red);border-color:var(--t-red)} .btn.green{background:var(--t-green);border-color:var(--t-green)}
+.btn.ghost{background:none;border:0;color:var(--brand);padding:8px 10px;min-height:0}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.full{width:100%}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btns .btn{flex:1}
+.badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;background:var(--sun-soft);color:#FFD27A}
+.badge.g{background:var(--brand-soft);color:var(--brand)}
+.field{display:block;margin:10px 0}
+.field > span{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+input.in,select.in,textarea.in{width:100%;border:2px solid #555;background:#000;padding:9px 10px;font-size:16px;color:#FFF}
+input.in:focus,select.in:focus,textarea.in:focus{border-color:var(--brand);outline:0;background:#FFF;color:#000}
+textarea.in{min-height:96px;resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.note{font-size:12.5px;padding:10px 12px;background:#1A1A1A;border-left:4px solid var(--sun);margin:10px 0}
+.card{background:var(--surface);padding:6px 14px}
+/* editor */
+#overlay{position:fixed;inset:0;z-index:20;background:#000;overflow:auto;display:none;padding-top:env(safe-area-inset-top,0px)}
+#overlay.open{display:block}
+.ov-head{position:sticky;top:0;z-index:2;background:#000;display:flex;align-items:center;gap:8px;padding:8px 12px;max-width:480px;margin:0 auto}
+.ov-head .ttl{flex:1;font-size:28px;text-align:left}
+.steps{display:flex;gap:3px;padding:0 16px;max-width:480px;margin:0 auto 8px}
+.steps i{flex:1;height:3px;background:#333}
+.steps i.on{background:var(--brand)}
+.item-row{display:grid;grid-template-columns:1fr 50px 100px 30px;gap:6px;align-items:center;padding:8px 10px;background:var(--surface)}
+.item-row.hd{background:none}
+.item-row input{border:1px solid transparent;background:transparent;padding:6px;width:100%;font-size:15px;color:#FFF}
+.item-row input:focus{border-color:var(--brand);background:#FFF;color:#000;outline:0}
+.item-row .x{border:0;background:none;color:var(--muted);font-size:20px;line-height:1}
+.item-row .sub{grid-column:1/-1;font-size:11.5px;color:var(--muted);padding-left:6px;margin-top:-4px}
+.totals{padding:12px 14px;font-size:14px;background:var(--surface)}
+.totals div{display:flex;justify-content:space-between;padding:3px 0}
+.totals .big{font-family:var(--light);font-size:20px;padding-top:6px}
+/* split */
+.people{display:flex;gap:6px;overflow-x:auto;padding:4px 0 12px;scrollbar-width:none}
+.people::-webkit-scrollbar{display:none}
+.person{flex:none;display:flex;flex-direction:column;align-items:flex-start;gap:3px;border:0;background:#1A1A1A;padding:8px;width:82px;min-height:96px;color:#FFF;text-align:left}
+.person .av{width:30px;height:30px;font-size:13px}
+.person.on{background:var(--c,var(--brand))}
+.person.on .av{background:rgba(0,0,0,.25)}
+.person .nm{font-size:12px;font-weight:600;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:auto}
+.person .mn{font-size:11px;opacity:.85}
+.person.off{opacity:.4}
+.dish{display:flex;align-items:center;gap:10px;padding:12px 10px 12px 12px;background:var(--surface);border-left:4px solid transparent}
+.dish.mine{border-left-color:var(--sel,var(--brand));background:color-mix(in srgb,var(--sel,var(--brand)) 14%,#111)}
+.dish .check{width:24px;height:24px;border:2px solid #666;flex:none;display:grid;place-items:center}
+.dish.mine .check{background:var(--sel,var(--brand));border-color:var(--sel,var(--brand))}
+.dish.mine .check::after{content:"";width:10px;height:6px;border-left:2.5px solid #fff;border-bottom:2.5px solid #fff;transform:rotate(-45deg) translate(1px,-1px)}
+.dish.un .t::after{content:"chưa gán";margin-left:8px;font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#FFA4A8;background:var(--owe-soft);padding:1px 5px;vertical-align:2px}
+.dish .dots{display:flex;gap:2px;margin-top:5px}
+.dish .more{border:0;background:#222;width:36px;height:36px;flex:none;font-size:18px;color:#CCC}
+.progress{position:sticky;bottom:0;background:#000;padding:12px 0 calc(12px + env(safe-area-inset-bottom,0px));margin-top:16px}
+.bar{height:3px;background:#333;overflow:hidden;margin-bottom:8px}
+.bar i{display:block;height:100%;background:var(--owed);transition:width .2s}
+/* sheet */
+#backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:30;display:none}
+#backdrop.open{display:block}
+#sheet{position:fixed;left:0;right:0;bottom:0;z-index:31;background:#111;border-top:3px solid var(--brand);max-height:90%;overflow:auto;transform:translateY(105%);visibility:hidden;transition:transform .2s cubic-bezier(.1,.9,.2,1),visibility 0s .2s;padding:12px 16px calc(24px + env(safe-area-inset-bottom,0px))}
+#sheet.open{transform:none;visibility:visible;transition:transform .2s cubic-bezier(.1,.9,.2,1)}
+#sheet .in{max-width:480px;margin:0 auto}
+#sheet .grab{display:none}
+#sheet h3{margin:2px 0 12px;font-size:26px}
+#sheet .row{background:#1A1A1A}
+.stepper{display:flex;align-items:center;gap:8px}
+.stepper button{width:36px;height:36px;border:2px solid #FFF;background:none;font-size:18px;line-height:1;color:#FFF}
+.stepper b{min-width:22px;text-align:center}
+.pay-card{background:#1A1A1A;padding:14px;margin:12px 0}
+.pay-card img{display:block;max-width:220px;width:100%;margin:6px auto 12px;background:#fff}
+.kv{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:5px 0;font-size:14px}
+.copy{border:1px solid var(--brand);background:none;color:var(--brand);font-weight:600;padding:3px 9px;font-size:11px;margin-left:6px;text-transform:lowercase}
+/* toast: thanh màu chạy ngang trên cùng như Windows Phone */
+#toast{position:fixed;left:0;right:0;top:0;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px;background:var(--brand);color:#FFF;font-size:13px;font-weight:600;z-index:40;transform:translateY(-100%);transition:transform .18s;pointer-events:none}
+#toast.show{transform:none}
+/* chat */
+.chat{display:flex;flex-direction:column;gap:8px;padding:8px 0}
+.msg{max-width:86%;padding:10px 12px;white-space:pre-wrap;font-size:14.5px}
+.msg.u{align-self:flex-end;background:var(--brand);color:#FFF}
+.msg.a{align-self:flex-start;background:#1F1F1F}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.chip{border:1px solid #555;background:none;padding:7px 12px;font-size:13px;color:#FFF;text-transform:lowercase}
+.composer{position:sticky;bottom:calc(66px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;background:#000;padding:8px 0}
+.composer textarea{flex:1;min-height:46px;max-height:120px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <span class="app-title">ĂN CHUNG</span>
+  <button class="who" id="who" data-act="pickMe"></button>
+</header>
+<nav class="pivot" aria-label="Màn hình">
+  <button data-act="tab" data-tab="home">sổ nợ</button>
+  <button data-act="tab" data-tab="bills">bill</button>
+  <button data-act="tab" data-tab="members">nhóm</button>
+  <button data-act="tab" data-tab="ask">trợ lý ai</button>
+</nav>
+<div id="sync" style="display:none;max-width:560px;margin:0 auto 4px;padding:0 16px;font-size:12px;color:var(--muted)"></div>
+<main class="wrap" id="view"></main>
+
+<footer class="appbar"><div class="in">
+  <div class="acts">
+    <button class="ab" data-act="newBill"><span class="c"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span><span class="l">thêm bill</span></button>
+    <button class="ab" data-act="newBillPhoto"><span class="c"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span><span class="l">chụp bill</span></button>
+    <button class="ab" data-act="reload"><span class="c"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7L20 8"/><path d="M20 3v5h-5"/></svg></span><span class="l">làm mới</span></button>
+  </div>
+  <button class="ab-more" data-act="moreMenu" aria-label="Thêm tuỳ chọn">···</button>
+</div></footer>
+
+<div id="overlay" role="dialog" aria-modal="true"></div>
+<div id="backdrop" data-act="closeSheet"></div>
+<div id="sheet" role="dialog" aria-modal="true"><div class="in" id="sheetIn"></div></div>
+<div id="toast" role="status"></div>
+
+<script>
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = n => (Math.round(n) || 0).toLocaleString('vi-VN') + 'đ';
+const norm = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase().trim();
+const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
+function todayLocal(){ const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+function fmtDate(s){ if(!s) return ''; const [y,m,d] = s.split('-'); return `${d}/${m}/${y}`; }
+const COLORS = ['#E5484D','#0F9D58','#F59E0B','#3B82F6','#D946EF','#14B8A6','#F97316','#8B5CF6','#EC4899','#65A30D','#0EA5E9','#A16207'];
+const METHODS = {cash:'Tiền mặt', transfer:'Chuyển khoản', card:'Thẻ', ewallet:'Ví điện tử'};
+function initials(name){ const p = String(name||'?').trim().split(/\s+/); return (p.length > 1 ? p[p.length-1][0] : p[0][0] || '?').toUpperCase(); }
+function toast(t){ const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove('show'), 2400); }
+async function copyText(t){ try { await navigator.clipboard.writeText(t); toast('Đã copy'); } catch { prompt('Copy nội dung này:', t); } }
+
+function parseMoney(v){
+  if (typeof v === 'number') return v;
+  let s = String(v || '').toLowerCase().replace(/\s+/g, '').replace(/(vnđ|vnd|đ)$/,'');
+  if (!s) return 0;
+  let m;
+  if ((m = s.match(/^(\d+)(?:tr|triệu|trieu)(\d{1,3})?$/))) return (+m[1]) * 1e6 + (m[2] ? Math.round(+('0.' + m[2]) * 1e6) : 0);
+  if ((m = s.match(/^(\d+(?:[.,]\d+)?)(tr|triệu|trieu)$/))) return Math.round(parseFloat(m[1].replace(',', '.')) * 1e6);
+  if ((m = s.match(/^(\d+(?:[.,]\d+)?)(k|nghìn|nghin|ngàn|ngan)$/))) return Math.round(parseFloat(m[1].replace(',', '.')) * 1000);
+  if (/^\d{1,3}([.,]\d{3})+$/.test(s)) return +s.replace(/[.,]/g, '');
+  if (/^\d+$/.test(s)) return +s;
+  if (/^\d+[.,]\d{1,2}$/.test(s)) return Math.round(parseFloat(s.replace(',', '.')));
+  return NaN;
+}
+
+/* ---------- cấu hình ---------- */
+// Dán URL web app của Apps Script (kết thúc bằng /exec) vào đây:
+const API_URL = 'https://script.google.com/macros/s/AKfycbxThLDlBVw22mg443fYYiMNfr3_0b6jeGHg3iD6yKbHhGIQYIeGDlObBuSwlNlVZYeo/exec';
+
+/* ---------- API (Apps Script) ---------- */
+let KEY = '';
+try { const u = new URL(location.href); const k = u.searchParams.get('k'); if (k) { localStorage.setItem('anchung.key', k); u.searchParams.delete('k'); history.replaceState(null, '', u.toString()); } KEY = localStorage.getItem('anchung.key') || ''; } catch {}
+async function apiGet(params){
+  const r = await fetch(API_URL + '?' + new URLSearchParams({ ...params, k: KEY }).toString());
+  const j = await r.json(); if (!j.ok) throw j; return j;
+}
+async function apiPost(body){
+  const r = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ ...body, k: KEY }) });
+  const j = await r.json(); if (!j.ok) throw j; return j;
+}
+function makeAI(){
+  return {
+    async json(prompt, opts = {}){
+      const body = { action: 'ai', prompt, bill: true };
+      if (opts.images && opts.images[0]) { const d = await compressImage(opts.images[0], 1280, 0.85); body.image = d.split(',')[1]; body.mediaType = 'image/jpeg'; }
+      const j = await apiPost(body);
+      const t = String(j.text || '').replace(/```json|```/g, '').trim();
+      const a = t.indexOf('{'), b = t.lastIndexOf('}');
+      if (a < 0 || b < a) throw { error: 'ai_bad_json' };
+      return JSON.parse(t.slice(a, b + 1));
+    },
+    async chat(turns){ const j = await apiPost({ action: 'ai', turns }); return String(j.text || ''); }
+  };
+}
+
+/* ---------- data layer ---------- */
+const S = { members: [], bills: [], payments: [], checks: [], me: null, tab: 'home', homeMode: 'bill', month: 'all', billFilter: 'all', chat: [], ready: false, rev: 0, saving: false, needKey: false, loadErr: '' };
+let sample = null, imgOk = false, dbWritable = true;
+try { const ss = JSON.parse(localStorage.getItem('anchung.session') || 'null'); if (ss && ss.memberId && ss.token) { S.me = ss.memberId; S.token = ss.token; } localStorage.removeItem('anchung.me'); const hm = localStorage.getItem('anchung.mode'); if (hm === 'bill' || hm === 'pair' || hm === 'net') S.homeMode = hm; } catch {}
+/* Lưu kiểu "lạc quan": cập nhật màn hình ngay, gửi lên Apps Script ở nền theo hàng đợi.
+   Mất mạng thì hàng đợi được giữ trên máy và tự gửi lại khi có mạng. */
+let OUTBOX = []; try { OUTBOX = JSON.parse(localStorage.getItem('anchung.outbox') || '[]'); } catch {}
+const saveOutbox = () => { try { localStorage.setItem('anchung.outbox', JSON.stringify(OUTBOX)); } catch {} };
+function applyOp(op){
+  if (op.action === 'set') { const i = S[op.col].findIndex(x => x.id === op.id); const doc = { id: op.id, ...op.data }; if (doc.imageData) { doc.image = doc.imageData; } if (i >= 0) S[op.col][i] = doc; else S[op.col].push(doc); }
+  else if (op.action === 'del') S[op.col] = S[op.col].filter(x => x.id !== op.id);
+}
+const store = {
+  async add(col, data){ store.set(col, uid() + uid(), data); },
+  async set(col, id, data){ const op = { action: 'set', col, id, data, t: Date.now() }; applyOp(op); OUTBOX.push(op); saveOutbox(); cacheLocal(); render(); flush(); },
+  async del(col, id){ const op = { action: 'del', col, id, t: Date.now() }; applyOp(op); OUTBOX.push(op); saveOutbox(); cacheLocal(); render(); flush(); }
+};
+let flushing = false, retryT = null;
+async function flush(){
+  if (flushing || !OUTBOX.length) { syncBadge(); return; }
+  flushing = true; syncBadge();
+  try {
+    while (OUTBOX.length){
+      const op = OUTBOX[0]; const prev = S.rev;
+      let j;
+      try { j = await apiPost({ action: op.action, col: op.col, id: op.id, data: op.data, token: S.token }); }
+      catch (e) {
+        const err = e && e.error;
+        if (err === 'unauthorized') { S.needKey = true; flushing = false; render(); return; }
+        if (err === 'need_login') { flushing = false; logout(true); toast('Phiên đăng nhập hết hạn. Chọn lại tên và nhập PIN.'); openPickMe(); return; }
+        if (err === 'forbidden') { OUTBOX.shift(); saveOutbox(); toast(e.reason || 'Bạn không có quyền sửa mục này.'); loadAll(true); continue; }
+        if (err) { OUTBOX.shift(); saveOutbox(); toast(err === 'too_large' ? 'Dữ liệu quá lớn, chưa lưu được.' : 'Máy chủ từ chối một thay đổi, đã tải lại dữ liệu.'); loadAll(true); continue; }
+        throw e; // lỗi mạng: giữ lại, thử sau
+      }
+      OUTBOX.shift(); saveOutbox();
+      if (op.action === 'set' && j.data) { const i = S[op.col].findIndex(x => x.id === op.id); if (i >= 0) S[op.col][i] = { id: op.id, ...j.data }; }
+      S.rev = j.rev;
+      if (j.rev !== prev + 1 && prev) S.stale = true; // có người khác vừa ghi
+    }
+    flushing = false; syncBadge(); cacheLocal();
+    if (S.stale) { S.stale = false; loadAll(true); } else if (!E) render();
+  } catch (e) {
+    flushing = false; syncBadge();
+    clearTimeout(retryT); retryT = setTimeout(flush, 8000);
+  }
+}
+window.addEventListener('online', flush);
+function syncBadge(){
+  const el = document.getElementById('sync'); if (!el) return;
+  const n = OUTBOX.length;
+  el.textContent = !n ? '' : (navigator.onLine === false ? `Ngoại tuyến · ${n} thay đổi chờ gửi` : `Đang đồng bộ ${n}…`);
+  el.style.display = n ? 'block' : 'none';
+  const lb = document.getElementById('liveBadge'); if (lb) lb.textContent = liveText();
+}
+function cacheLocal(){ try { localStorage.setItem('anchung.cache', JSON.stringify({ rev: S.rev, ai: !!sample, data: { members: S.members, bills: S.bills.map(b => b.image && String(b.image).indexOf('data:') === 0 ? { ...b, image: '' } : b), payments: S.payments, checks: S.checks } })); } catch {} }
+async function safe(p, okMsg){
+  try { await p; if (okMsg) toast(okMsg); return true; } catch { toast('Chưa lưu được.'); return false; }
+}
+const mById = id => S.members.find(m => m.id === id);
+/* ---------- quyền (giao diện chỉ ẩn nút; backend mới là nơi kiểm tra thật) ---------- */
+const billOwner = b => b.createdBy || b.payerId;
+const canEditBill = b => !!S.me && (S.me === billOwner(b) || S.me === b.payerId);
+const canEditMember = m => !!S.me && S.me === m.id;
+function setSession(memberId, token){ S.me = memberId; S.token = token; try { localStorage.setItem('anchung.session', JSON.stringify({ memberId, token })); } catch {} }
+function logout(silent){ S.me = null; S.token = ''; try { localStorage.removeItem('anchung.session'); } catch {} if (!silent) { closeSheet(); render(); } }
+function needLogin(){ if (S.me && S.token) return false; toast('Chọn bạn là ai và nhập PIN trước.'); openPickMe(); return true; }
+const PIN_ERR = { wrong_pin: 'PIN chưa đúng.', pin_locked: 'Nhập sai quá nhiều lần. Đợi 15 phút rồi thử lại.', no_pin: 'Người này chưa có PIN.', bad_pin: 'PIN cần 4–12 ký tự.', no_member: 'Không tìm thấy thành viên này (có thể chưa đồng bộ xong).' };
+const mName = id => mById(id)?.name || 'Người đã xoá';
+const mColor = id => mById(id)?.color || '#888';
+function av(id, cls=''){ return `<span class="av ${cls}" style="--c:${mColor(id)}" aria-hidden="true">${esc(initials(mName(id)))}</span>`; }
+
+/* ---------- money logic ---------- */
+function computeBill(b){
+  const items = b.items || [];
+  const sub = items.reduce((s, it) => s + (+it.amount || 0), 0);
+  const total = (+b.total > 0) ? +b.total : sub + (+b.vat || 0) + (+b.service || 0) - (+b.discount || 0);
+  const adj = total - sub;
+  const itemTot = {}; let unassigned = 0, unassignedCount = 0;
+  for (const it of items){
+    const sh = it.shares || {}; const w = Object.values(sh).reduce((s, v) => s + (+v || 0), 0);
+    if (w <= 0) { if (+it.amount) { unassigned += +it.amount; unassignedCount++; } continue; }
+    for (const [mid, v] of Object.entries(sh)) if (+v > 0) itemTot[mid] = (itemTot[mid] || 0) + it.amount * v / w;
+  }
+  const raw = {}, owes = {};
+  for (const [mid, t] of Object.entries(itemTot)) {
+    raw[mid] = t + (sub > 0 ? t / sub * adj : 0);
+    if (mid !== b.payerId && raw[mid] > 0) owes[mid] = Math.ceil(raw[mid] / 1000 - 1e-9) * 1000;
+  }
+  return { sub, total, adj, itemTot, raw, owes, unassigned, unassignedCount };
+}
+function ledger(){
+  const D = {}; const net = {};
+  const add = (a, b, amt) => { D[a] = D[a] || {}; D[a][b] = (D[a][b] || 0) + amt; };
+  for (const m of S.members) net[m.id] = 0;
+  for (const b of S.bills){ if (b.draft) continue;
+    const c = computeBill(b);
+    for (const [mid, amt] of Object.entries(c.owes)){ add(mid, b.payerId, amt); net[mid] = (net[mid] || 0) - amt; net[b.payerId] = (net[b.payerId] || 0) + amt; }
+  }
+  for (const p of S.payments){ add(p.to, p.from, +p.amount); net[p.from] = (net[p.from] || 0) + (+p.amount); net[p.to] = (net[p.to] || 0) - (+p.amount); }
+  const owe = (a, b) => ((D[a] || {})[b] || 0) - ((D[b] || {})[a] || 0); // >0: a owes b
+  return { net, owe, D };
+}
+function simplify(net){
+  const cr = [], de = [];
+  for (const [id, v] of Object.entries(net)) { if (v > 0.5) cr.push({ id, v }); else if (v < -0.5) de.push({ id, v: -v }); }
+  cr.sort((a, b) => b.v - a.v); de.sort((a, b) => b.v - a.v);
+  const out = []; let i = 0, j = 0;
+  while (i < de.length && j < cr.length){
+    const x = Math.min(de[i].v, cr[j].v);
+    out.push({ from: de[i].id, to: cr[j].id, amount: Math.round(x) });
+    de[i].v -= x; cr[j].v -= x;
+    if (de[i].v < 0.5) i++; if (cr[j].v < 0.5) j++;
+  }
+  return out;
+}
+
+/* per-bill debts: linked payments pay their own bill; other payments between two people
+   (and the offset recorded when two people settle "gộp") are applied oldest bill first */
+function billDebts(){
+  const debts = [];
+  for (const b of S.bills){ if (b.draft) continue; const c = computeBill(b); for (const [d, o] of Object.entries(c.owes)) debts.push({ billId: b.id, bill: b, from: d, to: b.payerId, owe: o, paid: 0, remaining: o, date: b.date || '', created: b.createdAt || 0 }); }
+  const pool = {}; const key = (a, b) => a + '>' + b;
+  const linked = {};
+  for (const p of S.payments){
+    const amt = +p.amount || 0, off = +p.offset || 0;
+    if (p.billId) linked[p.billId + '|' + p.from] = (linked[p.billId + '|' + p.from] || 0) + amt;
+    else pool[key(p.from, p.to)] = (pool[key(p.from, p.to)] || 0) + amt;
+    if (off) { pool[key(p.from, p.to)] = (pool[key(p.from, p.to)] || 0) + off; pool[key(p.to, p.from)] = (pool[key(p.to, p.from)] || 0) + off; }
+  }
+  for (const d of debts){ const l = linked[d.billId + '|' + d.from] || 0; const use = Math.min(l, d.owe); d.paid = use; linked[d.billId + '|' + d.from] = l - use; if (l - use > 0) { pool[key(d.from, d.to)] = (pool[key(d.from, d.to)] || 0) + (l - use); linked[d.billId + '|' + d.from] = 0; } }
+  const sorted = [...debts].sort((a, b) => a.date.localeCompare(b.date) || a.created - b.created);
+  for (const d of sorted){ const k = key(d.from, d.to); const need = d.owe - d.paid; const take = Math.min(need, pool[k] || 0); if (take > 0) { d.paid += take; pool[k] -= take; } }
+  for (const d of debts) d.remaining = Math.max(0, Math.round(d.owe - d.paid));
+  return debts;
+}
+
+/* ---------- render ---------- */
+function render(){
+  document.querySelectorAll('nav.pivot [data-tab]').forEach(b => { const on = b.dataset.tab === S.tab; b.classList.toggle('on', on); if (on) b.scrollIntoView({ inline: 'center', block: 'nearest' }); });
+  const me = mById(S.me);
+  $('#who').textContent = me ? me.name + ' ▾' : 'chọn tài khoản';
+  const v = $('#view');
+  if (!API_URL || API_URL.indexOf('PASTE_') === 0) { v.innerHTML = `<h2>Chưa cấu hình</h2><div class="empty">Mở file index.html, dán URL web app của Apps Script vào dòng API_URL rồi tải lại.</div>`; return; }
+  if (S.needKey || !KEY) { v.innerHTML = `<div class="hero"><div class="lbl">Vào nhóm</div><div class="num">Nhập mã nhóm</div><p style="margin:0;opacity:.9">Hỏi người tạo nhóm để lấy mã. Chỉ cần nhập một lần trên máy này.</p></div><label class="field" style="margin-top:18px"><span>Mã nhóm</span><input class="in" id="keyBox" autocomplete="off" autocapitalize="off" value=""></label><button class="btn full" data-act="saveKey">Vào nhóm</button>`; return; }
+  if (S.loadErr && !S.ready) { v.innerHTML = `<h2>Chưa kết nối được</h2><div class="empty">${esc(S.loadErr)}</div><button class="btn full" style="margin-top:12px" data-act="reload">Thử lại</button>`; return; }
+  if (!S.ready) { v.innerHTML = `<p class="muted" style="padding:30px 0">Đang tải dữ liệu…</p>`; return; }
+  if (S.tab === 'home') v.innerHTML = viewHome();
+  else if (S.tab === 'bills') v.innerHTML = viewBills();
+  else if (S.tab === 'members') v.innerHTML = viewMembers();
+  else if (S.tab === 'ask') { v.innerHTML = viewAsk(); const c = $('#chatEnd'); if (c) c.scrollIntoView({ block: 'end' }); }
+  if (E && $('#overlay').classList.contains('open')) renderEditor();
+}
+function localBanner(){ return ''; }
+
+function liveText(){ return navigator.onLine === false ? 'ngoại tuyến' : OUTBOX.length ? 'đang gửi ' + OUTBOX.length : 'đã đồng bộ'; }
+function viewHome(){
+  if (!S.members.length) return `<div class="tile tile-top t-accent"><div class="tile-label">BẮT ĐẦU</div><div><div class="tile-amount">chào team</div><span class="tile-sub">thêm những người hay đi ăn cùng nhau, rồi ghi bill đầu tiên</span></div></div><button class="btn full" style="margin-top:10px" data-act="tab" data-tab="members">thêm thành viên</button>`;
+  if (!mById(S.me)) return `<h2>bạn là ai trong nhóm?</h2><p class="muted small" style="margin:0 0 10px">Chọn tên của bạn rồi nhập PIN (lần đầu thì tạo PIN).</p><div class="list">${S.members.map(m => `<button class="row" data-act="pickLogin" data-id="${m.id}">${av(m.id)}<span class="grow"><span class="t">${esc(m.name)}</span><span class="s">${m.hasPin ? 'đã có PIN' : 'chưa có PIN'}</span></span></button>`).join('')}</div>`;
+
+  const seg = `<div class="seg" role="tablist">
+    <button class="${S.homeMode==='bill'?'on':''}" data-act="homeMode" data-v="bill">từng bill</button>
+    <button class="${S.homeMode==='pair'?'on':''}" data-act="homeMode" data-v="pair">cặp người</button>
+    <button class="${S.homeMode==='net'?'on':''}" data-act="homeMode" data-v="net">gộp tối ưu</button>
+  </div>`;
+
+  let payHtml, getHtml, sumPay = 0, sumGet = 0, nPay = 0, nGet = 0, note;
+  if (S.homeMode === 'bill') {
+    const debts = billDebts().filter(d => d.remaining > 0).sort((a, b) => b.date.localeCompare(a.date) || b.created - a.created);
+    const pay = debts.filter(d => d.from === S.me), get = debts.filter(d => d.to === S.me);
+    sumPay = pay.reduce((s, d) => s + d.remaining, 0); sumGet = get.reduce((s, d) => s + d.remaining, 0); nPay = pay.length; nGet = get.length;
+    payHtml = pay.map(d => billDebtRow(d, 'pay')).join(''); getHtml = get.map(d => billDebtRow(d, 'get')).join('');
+    note = 'Mỗi bill trả riêng cho người đã trả bill đó.';
+  } else if (S.homeMode === 'pair') {
+    const L = ledger();
+    const rows = S.members.filter(m => m.id !== S.me).map(m => ({ id: m.id, v: Math.round(L.owe(S.me, m.id)) }));
+    const pay = rows.filter(r => r.v > 0).sort((a, b) => b.v - a.v), get = rows.filter(r => r.v < 0).map(r => ({ id: r.id, v: -r.v })).sort((a, b) => b.v - a.v);
+    sumPay = pay.reduce((s, r) => s + r.v, 0); sumGet = get.reduce((s, r) => s + r.v, 0); nPay = pay.length; nGet = get.length;
+    payHtml = pay.map(r => transferRow(r.id, r.v, 'pay')).join(''); getHtml = get.map(r => transferRow(r.id, r.v, 'get')).join('');
+    note = 'Gộp tất cả bill giữa 2 người (bù trừ 2 chiều), người kia có thể nhận tiền hộ bill của bạn.';
+  } else {
+    const L = ledger();
+    const simpleDebts = simplify(L.net);
+    const pay = simpleDebts.filter(d => d.from === S.me).map(d => ({ id: d.to, v: d.amount }));
+    const get = simpleDebts.filter(d => d.to === S.me).map(d => ({ id: d.from, v: d.amount }));
+    sumPay = pay.reduce((s, r) => s + r.v, 0); sumGet = get.reduce((s, r) => s + r.v, 0); nPay = pay.length; nGet = get.length;
+    payHtml = pay.map(r => transferRow(r.id, r.v, 'pay')).join(''); getHtml = get.map(r => transferRow(r.id, r.v, 'get')).join('');
+    note = 'Gộp tất toán: tự cấn trừ chéo giữa tất cả mọi người, ai âm ròng trả thẳng cho ai dương ròng để số lần chuyển ít nhất.';
+  }
+  const net = sumGet - sumPay;
+  const tiles = `<div class="tiles">
+    <div class="tile tile-top ${net > 0 ? 't-green' : net < 0 ? 't-red' : 't-gray'}">
+      <div class="tile-head"><span class="tile-label">SỐ DƯ CỦA BẠN</span><span class="live" id="liveBadge">${liveText()}</span></div>
+      <div><div class="tile-amount">${net > 0 ? '+' : net < 0 ? '−' : ''}${fmt(Math.abs(net))}</div><span class="tile-sub">${net > 0 ? 'mọi người đang nợ bạn' : net < 0 ? 'bạn đang nợ' : 'không ai nợ ai'}</span></div>
+    </div>
+    <div class="tiles-pair">
+      <button class="tile t-cyan" data-act="scrollTo" data-target="secGet"><span class="tile-sym">$</span><span><span class="tile-small-amount">${fmt(sumGet)}</span><span class="tile-sub">cần trả bạn · ${nGet} khoản</span></span></button>
+      <button class="tile t-magenta" data-act="scrollTo" data-target="secPay"><span class="tile-sym">→</span><span><span class="tile-small-amount">${fmt(sumPay)}</span><span class="tile-sub">bạn cần trả · ${nPay} khoản</span></span></button>
+    </div>
+  </div>`;
+  const drafts = S.bills.filter(b => b.draft).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  let body = drafts.length ? `<h2>bill chờ chia<span class="count">${drafts.length} bill</span></h2><div class="list">${drafts.map(b => { const c = computeBill({ ...b, draft: false }); return `<button class="row" style="border-left-color:var(--sun)" data-act="${canEditBill(b) ? 'splitDraft' : 'openBill'}" data-id="${b.id}">${av(b.payerId)}<span class="grow"><span class="t">${esc(b.merchant || 'Bữa ăn')}</span><span class="s">${fmtDate(b.date)} · ${esc(mName(b.payerId))} trả</span></span><span class="amt-wrap"><span class="amt">${fmt(c.total)}</span><span class="pill" style="background:var(--sun-soft);color:#FFD27A">${canEditBill(b) ? 'chia ngay' : 'chờ ' + esc(mName(b.payerId))}</span></span></button>`; }).join('')}</div>` : '';
+  body += seg + `<p class="muted small" style="margin:6px 0 0">${note}</p>`;
+  body += `<h2 id="secPay">bạn cần trả<span class="count">${nPay} khoản</span></h2>` + (nPay ? `<div class="list">${payHtml}</div>` : `<div class="empty">Bạn không cần trả ai.</div>`);
+  body += `<h2 id="secGet">cần trả bạn<span class="count">${nGet} khoản</span></h2>` + (nGet ? `<div class="list">${getHtml}</div>` : `<div class="empty">Chưa ai nợ bạn.</div>`);
+  return tiles + body;
+}
+function billDebtRow(d, dir){
+  const other = dir === 'pay' ? d.to : d.from;
+  const ck = checkFor(d.from, d.to, d.billId); const checked = ck && Math.round(ck.amount) === Math.round(d.remaining);
+  const partial = d.paid > 0 ? ` · đã trả ${fmt(d.paid)}` : '';
+  const sub = `${esc(d.bill.merchant || 'Bữa ăn')} · ${fmtDate(d.date)}${partial}`;
+  const title = dir === 'pay' ? `Trả ${esc(mName(other))}` : esc(mName(other));
+  return `<button class="row ${dir==='pay'?'owe':'owed'}" data-act="openBillDebt" data-bill="${d.billId}" data-from="${d.from}" data-to="${d.to}">${av(other)}<span class="grow"><span class="t">${title}</span><span class="s">${sub}</span></span><span class="amt-wrap"><span class="amt ${dir==='pay'?'neg':'pos'}">${dir==='pay'?'−':'+'}${fmt(d.remaining)}</span><span class="pill ${checked ? '' : dir==='pay'?'owe':'owed'}" ${checked ? 'style="background:var(--sun-soft);color:#FFD27A"' : ''}>${checked ? 'đã check' : dir==='pay'?'chưa trả':'được nợ'}</span></span></button>`;
+}
+function checkFor(from, to, billId){ return S.checks.find(c => c.from === from && c.to === to && (billId ? c.billId === billId : !c.billId)); }
+function transferRow(otherId, amount, dir){
+  const from = dir === 'pay' ? S.me : otherId, to = dir === 'pay' ? otherId : S.me;
+  const ck = checkFor(from, to); const checked = ck && Math.round(ck.amount) === Math.round(amount);
+  const sub = checked ? (dir === 'pay' ? 'Bạn đã check, chưa trả' : 'Đã check, chưa trả') : (dir === 'pay' ? 'Chạm để xem thông tin trả' : 'Chạm để xem chi tiết');
+  return `<button class="row ${dir==='pay'?'owe':'owed'}" data-act="openPerson" data-id="${otherId}" data-dir="${dir}" data-amt="${amount}">${av(otherId)}<span class="grow"><span class="t">${esc(mName(otherId))}</span><span class="s">${sub}</span></span><span class="amt-wrap"><span class="amt ${dir==='pay'?'neg':'pos'}">${dir==='pay'?'−':'+'}${fmt(amount)}</span><span class="pill ${dir==='pay'?'owe':'owed'}">${dir==='pay'?'chưa trả':'được nợ'}</span></span></button>`;
+}
+function monthStats(month){
+  const bills = S.bills.filter(b => !b.draft && (month === 'all' || (b.date || '').startsWith(month)));
+  let total = 0, mine = 0; const byPayer = {}, byPlace = {};
+  for (const b of bills){
+    const c = computeBill(b); total += c.total;
+    if (S.me && c.raw[S.me]) mine += b.payerId === S.me ? c.raw[S.me] : (c.owes[S.me] || 0);
+    byPayer[b.payerId] = (byPayer[b.payerId] || 0) + c.total;
+    const k = (b.merchant || 'Bữa ăn').trim(); byPlace[k] = (byPlace[k] || 0) + 1;
+  }
+  const topPayer = Object.entries(byPayer).sort((x, y) => y[1] - x[1])[0];
+  const topPlace = Object.entries(byPlace).sort((x, y) => y[1] - x[1])[0];
+  return { n: bills.length, total, mine, topPayer, topPlace };
+}
+function exportCSV(){
+  const month = S.month;
+  const debts = billDebts();
+  const st = {}; debts.forEach(d => st[d.billId + '|' + d.from] = d);
+  const rows = [['Ngày', 'Quán / bữa', 'Người trả bill', 'Phương thức', 'Tổng bill', 'Thành viên', 'Phần phải trả', 'Đã trả', 'Còn lại', 'Ghi chú']];
+  const bills = S.bills.filter(b => month === 'all' || (b.date || '').startsWith(month)).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+  for (const b of bills){
+    const c = computeBill(b);
+    if (b.draft) { rows.push([b.date, b.merchant || 'Bữa ăn', mName(b.payerId), METHODS[b.method] || '', Math.round(c.total), '', '', '', '', 'Bill nháp, chưa chia']); continue; }
+    for (const mid of Object.keys(c.raw)){
+      if (mid === b.payerId) { rows.push([b.date, b.merchant || 'Bữa ăn', mName(b.payerId), METHODS[b.method] || '', Math.round(c.total), mName(mid), Math.round(c.raw[mid]), '', '', 'Người trả bill']); continue; }
+      const d = st[b.id + '|' + mid];
+      rows.push([b.date, b.merchant || 'Bữa ăn', mName(b.payerId), METHODS[b.method] || '', Math.round(c.total), mName(mid), c.owes[mid] || 0, d ? Math.round(d.paid) : 0, d ? d.remaining : 0, d && d.remaining === 0 ? 'Đã trả' : '']);
+    }
+  }
+  rows.push([]); rows.push(['Thanh toán đã ghi']); rows.push(['Ngày', 'Người trả', 'Người nhận', 'Số tiền', 'Loại', 'Bill']);
+  S.payments.filter(p => month === 'all' || (p.date || '').startsWith(month)).sort((a, b) => (a.date || '').localeCompare(b.date || '')).forEach(p => {
+    const bill = p.billId ? S.bills.find(b => b.id === p.billId) : null;
+    rows.push([p.date, mName(p.from), mName(p.to), Math.round(p.amount), p.billId ? 'Theo bill' : 'Gộp', bill ? (bill.merchant || 'Bữa ăn') + ' ' + fmtDate(bill.date) : '']);
+  });
+  const csv = '\ufeff' + rows.map(r => r.map(v => { const x = String(v ?? ''); return /[",\n;]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x; }).join(',')).join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `an-chung-${month === 'all' ? 'tat-ca' : month}.csv`;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  toast('Đã xuất file CSV (mở được bằng Excel, Google Sheets)');
+}
+function viewBills(){
+  const months = [...new Set(S.bills.map(b => (b.date || '').slice(0, 7)).filter(Boolean))].sort().reverse();
+  let list = S.bills.filter(b => S.month === 'all' || (b.date || '').startsWith(S.month));
+  if (S.billFilter === 'mine' && S.me) list = list.filter(b => { const c = computeBill(b); return b.payerId === S.me || (c.owes[S.me] > 0) || (c.raw && c.raw[S.me] > 0); });
+  list.sort((a, b) => (b.date || '').localeCompare(a.date || '') || (b.createdAt || 0) - (a.createdAt || 0));
+  const st = monthStats(S.month);
+  const stats = st.n ? `<div class="tiles-pair" style="margin-bottom:8px">
+      <div class="tile t-cyan"><span class="tile-label">CẢ NHÓM</span><span><span class="tile-small-amount">${fmt(st.total)}</span><span class="tile-sub">${st.n} bữa</span></span></div>
+      <div class="tile t-magenta"><span class="tile-label">PHẦN CỦA BẠN</span><span><span class="tile-small-amount">${fmt(st.mine)}</span><span class="tile-sub">TB ${fmt(st.mine / st.n)}/bữa</span></span></div>
+    </div>
+    <div class="card"><div class="kv"><span class="muted">trả bill nhiều nhất</span><b>${st.topPayer ? esc(mName(st.topPayer[0])) + ' · ' + fmt(st.topPayer[1]) : ''}</b></div>
+    <div class="kv"><span class="muted">quán hay đi nhất</span><b>${st.topPlace ? esc(st.topPlace[0]) + ' · ' + st.topPlace[1] + ' lần' : ''}</b></div></div>` : '';
+  return `<div class="grid2" style="margin:2px 0 10px">
+    <select class="in" data-f="billFilter"><option value="all" ${S.billFilter==='all'?'selected':''}>tất cả bill</option><option value="mine" ${S.billFilter==='mine'?'selected':''}>bill của tôi</option></select>
+    <select class="in" data-f="month"><option value="all">mọi tháng</option>${months.map(m => `<option value="${m}" ${S.month===m?'selected':''}>tháng ${m.slice(5)}/${m.slice(0,4)}</option>`).join('')}</select>
+  </div>
+  ${stats}
+  <h2>lịch sử<span class="count">${list.length} bill</span></h2>
+  ${list.length ? `<div class="list">${list.map(b => { const c = computeBill(b); return `<button class="row" ${b.draft ? 'style="border-left-color:var(--sun)"' : ''} data-act="openBill" data-id="${b.id}">${av(b.payerId)}<span class="grow"><span class="t">${esc(b.merchant || 'Bữa ăn')}</span><span class="s">${b.draft ? 'nháp · ' : ''}${fmtDate(b.date)} · ${esc(mName(b.payerId))} trả · ${(b.items||[]).length} món</span></span><span class="amt">${fmt(c.total)}</span></button>`; }).join('')}</div>
+  <button class="btn sec full" style="margin-top:14px" data-act="exportCSV">xuất CSV</button>`
+  : `<div class="empty">Chưa có bill nào.</div>`}`;
+}
+function viewMembers(){
+  const L = ledger();
+  return `<h2>thành viên<span class="count">${S.members.length} người</span></h2><button class="btn full" style="margin-bottom:10px" data-act="editMember">thêm người</button>` +
+  (S.members.length ? `<div class="list">${S.members.map(m => { const n = Math.round(L.net[m.id] || 0); const hasPay = m.qr || m.account; return `<button class="row" data-act="editMember" data-id="${m.id}">${av(m.id)}<span class="grow"><span class="t">${esc(m.name)}${m.id===S.me?' <span class="badge g">bạn</span>':''}</span><span class="s">${hasPay ? 'Có thông tin nhận tiền' : 'Chưa có thông tin nhận tiền'}${m.hasPin ? '' : ' · chưa có PIN'}</span></span><span class="amt ${n>0?'pos':n<0?'neg':'muted'}">${n===0?'0đ':(n>0?'+':'−')+fmt(Math.abs(n))}</span></button>`; }).join('')}</div>`
+  : `<div class="empty">Chưa có ai. Thêm những người hay đi ăn cùng nhau.</div>`);
+}
+
+function viewAsk(){
+  if (!sample) return `<h2>Hỏi về công nợ</h2><div class="empty">Chưa bật AI. Thêm GEMINI_API_KEY trong Thuộc tính tập lệnh của Apps Script để dùng tính năng này.</div>`;
+  const chips = ['Ai đang nợ mình?', 'Mình cần trả ai, bao nhiêu?', 'Tháng này ai trả tiền nhiều nhất?', 'Mình đã ăn gì ở bill gần nhất?'];
+  return `<h2>hỏi về công nợ</h2><p class="muted small">Hỏi bằng tiếng Việt thường ngày. Câu trả lời dựa trên bill và thanh toán của nhóm.</p>
+  <div class="chat">${S.chat.map(m => `<div class="msg ${m.role==='user'?'u':'a'}">${esc(m.content)}</div>`).join('')}<span id="chatEnd"></span></div>
+  ${S.chat.length ? '' : `<div class="chips">${chips.map(c => `<button class="chip" data-act="askChip">${esc(c)}</button>`).join('')}</div>`}
+  <div class="composer"><textarea class="in" id="askBox" placeholder="Ví dụ: Bình còn nợ mình bao nhiêu?" rows="1"></textarea><button class="btn" data-act="askSend" ${S.asking?'disabled':''}>Gửi</button></div>`;
+}
+
+/* ---------- sheets ---------- */
+function openSheet(html){ $('#sheetIn').innerHTML = `<div class="grab"></div>` + html; $('#sheet').classList.add('open'); $('#backdrop').classList.add('open'); }
+function closeSheet(){ $('#sheet').classList.remove('open'); $('#backdrop').classList.remove('open'); sheetCtx = null; }
+let sheetCtx = null;
+
+function payInfoHtml(m){
+  if (!m.qr && !m.account && !m.bank) return `<div class="pay-card muted small">${esc(m.name)} chưa khai thông tin nhận tiền. Nhắn trực tiếp để hỏi số tài khoản.</div>`;
+  return `<div class="pay-card">${m.qr ? `<img src="${m.qr}" alt="Mã QR nhận tiền của ${esc(m.name)}">` : ''}
+    ${m.bank ? `<div class="kv"><span class="muted">Ngân hàng</span><b>${esc(m.bank)}</b></div>` : ''}
+    ${m.account ? `<div class="kv"><span class="muted">Số tài khoản</span><span><b>${esc(m.account)}</b><button class="copy" data-act="copy" data-t="${esc(m.account)}">Copy</button></span></div>` : ''}
+    ${m.holder ? `<div class="kv"><span class="muted">Chủ tài khoản</span><b>${esc(m.holder)}</b></div>` : ''}
+    ${m.payNote ? `<div class="small muted" style="margin-top:6px">${esc(m.payNote)}</div>` : ''}</div>`;
+}
+function openPerson(id, dir, amt){
+  const m = mById(id); if (!m) return;
+  sheetCtx = { kind: 'person', id, dir, amt };
+  const L = ledger(); const pairV = Math.round(L.owe(S.me, id));
+  const from = dir === 'pay' ? S.me : id, to = dir === 'pay' ? id : S.me;
+  const ck = checkFor(from, to);
+  let top = `<div style="display:flex;align-items:center;gap:12px">${av(id,'l')}<div><h3 style="margin:0">${esc(m.name)}</h3><div class="small muted">${dir==='pay' ? 'Bạn cần trả' : 'Cần trả bạn'} <b class="${dir==='pay'?'neg':'pos'}">${fmt(amt)}</b></div></div></div>`;
+  if (dir === 'pay'){
+    top += payInfoHtml(m) + `<label class="field"><span>Số tiền trả (sửa nếu trả một phần)</span><input class="in" id="payAmt" inputmode="numeric" value="${Math.round(amt)}"></label>
+    ${ck ? `<p class="small muted">Bạn đã check ${fmt(ck.amount)} lúc ${new Date(ck.at).toLocaleString('vi-VN')}.</p>` : ''}
+    <div class="btns"><button class="btn sec" data-act="doCheck">Check</button><button class="btn green" data-act="doPay">Done payment</button></div>
+    <p class="small muted">Check: bạn đã xem và đồng ý số nợ, chưa trả. Done payment: bạn đã trả xong, số nợ được trừ ngay.</p>`;
+  } else {
+    const msg = `Hi ${m.name}, khoản ăn chung bạn còn chuyển mình ${fmt(amt)} nhé. Chi tiết xem trong app Ăn chung.`;
+    top += `${ck ? `<p><span class="badge">${esc(m.name)} đã check ${fmt(ck.amount)}</span></p>` : ''}<div class="btns" style="margin-top:14px"><button class="btn sec" data-act="copy" data-t="${esc(msg)}">Copy lời nhắc</button></div>`;
+  }
+  // history between the two
+  const hist = [];
+  for (const b of S.bills){ if (b.draft) continue;
+    const c = computeBill(b);
+    if (b.payerId === S.me && c.owes[id]) hist.push({ d: b.date, t: `${esc(b.merchant||'Bữa ăn')}: ${esc(m.name)} nợ bạn`, v: c.owes[id], pos: true, bill: b.id });
+    if (b.payerId === id && c.owes[S.me]) hist.push({ d: b.date, t: `${esc(b.merchant||'Bữa ăn')}: bạn nợ ${esc(m.name)}`, v: c.owes[S.me], pos: false, bill: b.id });
+  }
+  for (const p of S.payments){
+    if (p.from === S.me && p.to === id) hist.push({ d: p.date, t: `Bạn đã trả ${esc(m.name)}`, v: p.amount, pos: true, pay: p.id, mineSent: true });
+    if (p.from === id && p.to === S.me) hist.push({ d: p.date, t: `${esc(m.name)} đã trả bạn`, v: p.amount, pos: false, pay: p.id, received: true });
+  }
+  hist.sort((a, b) => (b.d || '').localeCompare(a.d || ''));
+  const pairTxt = pairV > 0 ? `Nợ gốc giữa hai người: bạn nợ ${esc(m.name)} ${fmt(pairV)}` : pairV < 0 ? `Nợ gốc giữa hai người: ${esc(m.name)} nợ bạn ${fmt(-pairV)}` : 'Nợ gốc giữa hai người: đã cân bằng';
+  const histHtml = hist.length ? `<div class="list">${hist.map(h => `<div class="row"><span class="grow"><span class="t" style="white-space:normal">${h.t}</span><span class="s">${fmtDate(h.d)}${h.received ? ` · <button class="copy" data-act="undoPay" data-id="${h.pay}">Chưa nhận được</button>` : ''}</span></span><span class="amt ${h.pos?'pos':'neg'}">${fmt(h.v)}</span></div>`).join('')}</div>` : `<div class="empty">Chưa có giao dịch nào giữa hai người.</div>`;
+  openSheet(`${top}<h2>Lịch sử với ${esc(m.name)}</h2><p class="small muted">${pairTxt}</p>${histHtml}`);
+}
+function openBillDebt(billId, from, to){
+  const d = billDebts().find(x => x.billId === billId && x.from === from && x.to === to); if (!d) { toast('Khoản này đã được trả xong.'); return; }
+  const dir = from === S.me ? 'pay' : 'get'; const other = dir === 'pay' ? to : from; const m = mById(other) || { name: mName(other) };
+  sheetCtx = { kind: 'billDebt', billId, from, to, remaining: d.remaining };
+  const b = d.bill; const c = computeBill(b);
+  const myItems = (b.items || []).filter(it => (it.shares || {})[from] > 0).map(it => { const w = Object.values(it.shares).reduce((s, v) => s + v, 0); return `<div class="kv"><span>${esc(it.name)}${it.shares[from] > 1 || w > 1 ? ` <span class="muted small">(${it.shares[from]}/${w} phần)</span>` : ''}</span><span>${fmt(it.amount * it.shares[from] / w)}</span></div>`; }).join('');
+  const extra = Math.round(c.raw[from] - (c.itemTot[from] || 0));
+  const ck = checkFor(from, to, billId);
+  let html = `<div style="display:flex;align-items:center;gap:12px">${av(other,'l')}<div><h3 style="margin:0">${dir==='pay' ? 'Trả ' + esc(m.name) : esc(m.name) + ' nợ bạn'}</h3><div class="small muted">${esc(b.merchant || 'Bữa ăn')} · ${fmtDate(b.date)}</div></div></div>
+    <div class="pay-card"><div class="small muted" style="margin-bottom:4px">${dir==='pay' ? 'Phần bạn ăn' : 'Phần ' + esc(m.name) + ' ăn'}</div>${myItems}
+    ${extra ? `<div class="kv"><span class="muted">VAT, phí, giảm giá (theo tỷ lệ)</span><span>${extra > 0 ? '' : '−'}${fmt(Math.abs(extra))}</span></div>` : ''}
+    <div class="kv"><span class="muted">Làm tròn lên</span><span>${fmt(d.owe - Math.round(c.raw[from]))}</span></div>
+    ${d.paid ? `<div class="kv"><span class="muted">Đã trả</span><span class="pos">−${fmt(d.paid)}</span></div>` : ''}
+    <div class="kv" style="border-top:1px solid var(--line);margin-top:6px;padding-top:8px"><b>Còn lại</b><b class="${dir==='pay'?'neg':'pos'}">${fmt(d.remaining)}</b></div></div>`;
+  if (dir === 'pay') {
+    html += payInfoHtml(m) + `<label class="field"><span>Số tiền trả (sửa nếu trả một phần)</span><input class="in" id="payAmt" inputmode="numeric" value="${d.remaining}"></label>
+      ${ck ? `<p class="small muted">Bạn đã check ${fmt(ck.amount)} lúc ${new Date(ck.at).toLocaleString('vi-VN')}.</p>` : ''}
+      <div class="btns"><button class="btn sec" data-act="doCheck">Check</button><button class="btn green" data-act="doPay">Done payment</button></div>
+      <p class="small muted">Check: đã xem và đồng ý, chưa trả. Done payment: đã trả khoản của bill này.</p>`;
+  } else {
+    const msg = `Hi ${m.name}, bill ${b.merchant || 'bữa ăn'} ngày ${fmtDate(b.date)} bạn còn chuyển mình ${fmt(d.remaining)} nhé.`;
+    const pays = S.payments.filter(p => p.billId === billId && p.from === from && p.to === to);
+    html += `${ck ? `<p><span class="badge">${esc(m.name)} đã check ${fmt(ck.amount)}</span></p>` : ''}<div class="btns"><button class="btn sec" data-act="copy" data-t="${esc(msg)}">Copy lời nhắc</button><button class="btn sec" data-act="openBill" data-id="${billId}">Xem cả bill</button></div>
+      ${pays.length ? `<h2>Đã nhận cho bill này</h2><div class="list">${pays.map(p => `<div class="row"><span class="grow"><span class="t">${fmt(p.amount)}</span><span class="s">${fmtDate(p.date)}</span></span><button class="copy" data-act="undoPay" data-id="${p.id}">Chưa nhận được</button></div>`).join('')}</div>` : ''}`;
+  }
+  openSheet(html);
+}
+function openBill(id){
+  const b = S.bills.find(x => x.id === id); if (!b) return;
+  const c = computeBill(b);
+  const items = (b.items || []).map(it => { const ids = Object.entries(it.shares || {}).filter(([, v]) => v > 0).map(([k]) => k); return `<div class="row"><span class="grow"><span class="t">${esc(it.name)}${it.qty>1?` ×${it.qty}`:''}</span><span class="dots" style="display:flex;margin-top:4px">${ids.map(k => av(k,'s')).join('')}</span></span><span class="amt">${fmt(it.amount)}</span></div>`; }).join('');
+  const st = {}; billDebts().filter(d => d.billId === b.id).forEach(d => st[d.from] = d);
+  const people = Object.keys(c.raw).map(mid => `<div class="kv"><span>${esc(mName(mid))}${mid===b.payerId?' (người trả)':''}${mid!==b.payerId && st[mid] ? (st[mid].remaining === 0 ? ' <span class="pill owed">đã trả</span>' : st[mid].paid > 0 ? ' <span class="pill owe">còn ' + fmt(st[mid].remaining) + '</span>' : '') : ''}</span><b>${mid===b.payerId ? fmt(c.raw[mid]) : fmt(c.owes[mid])}</b></div>`).join('');
+  openSheet(`<h3>${esc(b.merchant || 'Bữa ăn')}</h3>${b.image ? `<a href="${esc(b.image)}" target="_blank" rel="noopener"><img src="${esc(b.image)}" alt="Ảnh bill" style="width:100%;max-height:260px;object-fit:cover;border-radius:14px;margin-bottom:8px"></a>` : ''}<p class="small muted">${fmtDate(b.date)} · ${esc(mName(b.payerId))} trả bằng ${esc(METHODS[b.method] || 'không rõ')}</p>
+    <div class="list">${items}</div>
+    <div class="totals"><div><span>Tạm tính</span><span>${fmt(c.sub)}</span></div>${b.vat?`<div><span>VAT</span><span>${fmt(b.vat)}</span></div>`:''}${b.service?`<div><span>Phí dịch vụ</span><span>${fmt(b.service)}</span></div>`:''}${b.discount?`<div><span>Giảm giá</span><span>−${fmt(b.discount)}</span></div>`:''}<div class="big"><span>Tổng thực trả</span><span>${fmt(c.total)}</span></div></div>
+    <h2>Mỗi người</h2><div class="pay-card">${people}<p class="small muted" style="margin:6px 0 0">Phần của người nợ đã làm tròn lên 1.000đ; phần dư thuộc về người trả.</p></div>
+    ${b.draft ? `<div class="note">Bill nháp: chưa tính nợ cho ai cho tới khi chia xong.</div>${canEditBill(b) ? `<button class="btn full" style="margin-bottom:8px" data-act="splitDraft" data-id="${b.id}">Chia ngay</button>` : ''}` : ''}
+    ${canEditBill(b) ? `<div class="btns"><button class="btn sec" data-act="editBill" data-id="${b.id}">Sửa bill</button><button class="btn red" data-act="delBill" data-id="${b.id}">Xoá bill</button></div>` : `<p class="small muted">Chỉ ${esc(mName(billOwner(b)))}${b.payerId !== billOwner(b) ? ' hoặc ' + esc(mName(b.payerId)) : ''} được sửa bill này.</p>`}`);
+}
+function openPickMe(){
+  if (!S.members.length) { S.tab = 'members'; render(); return; }
+  openSheet(`<h3>Bạn là ai?</h3><p class="small muted" style="margin-top:-6px">Chọn tên của bạn và nhập PIN. Đổi sang người khác cũng cần PIN của người đó.</p>
+  <div class="list">${S.members.map(m => `<button class="row" data-act="pickLogin" data-id="${m.id}">${av(m.id)}<span class="grow"><span class="t">${esc(m.name)}</span><span class="s">${m.hasPin ? 'Đã có PIN' : 'Chưa có PIN, chọn để tạo'}</span></span>${m.id===S.me?'<span class="badge g">đang dùng</span>':''}</button>`).join('')}</div>
+  ${S.me ? `<button class="btn sec full" style="margin-top:12px" data-act="logout">Đăng xuất khỏi ${esc(mName(S.me))}</button>` : ''}`);
+}
+function openLogin(id){
+  const m = mById(id); if (!m) return;
+  sheetCtx = { kind: 'login', id };
+  if (m.hasPin) openSheet(`<div style="display:flex;align-items:center;gap:12px">${av(id,'l')}<div><h3 style="margin:0">Bạn là ${esc(m.name)}?</h3><div class="small muted">Nhập PIN của ${esc(m.name)}</div></div></div>
+    <label class="field" style="margin-top:14px"><span>PIN</span><input class="in" id="pinBox" type="password" inputmode="numeric" autocomplete="current-password" maxlength="12"></label>
+    <button class="btn full" data-act="doLogin">Đăng nhập</button>
+    <p class="small muted">Quên PIN? Nhờ người quản lý Google Sheet chạy hàm resetPin('${esc(m.name)}') trong Apps Script.</p>`);
+  else openSheet(`<div style="display:flex;align-items:center;gap:12px">${av(id,'l')}<div><h3 style="margin:0">Tạo PIN cho ${esc(m.name)}</h3><div class="small muted">Chỉ tạo nếu đây đúng là bạn</div></div></div>
+    <label class="field" style="margin-top:14px"><span>PIN mới (4–12 ký tự, nên dùng 6 số)</span><input class="in" id="pinNew" type="password" inputmode="numeric" autocomplete="new-password" maxlength="12"></label>
+    <label class="field"><span>Nhập lại PIN</span><input class="in" id="pinNew2" type="password" inputmode="numeric" autocomplete="new-password" maxlength="12"></label>
+    <button class="btn full" data-act="doCreatePin">Tạo PIN và đăng nhập</button>
+    <p class="small muted">Từ giờ ai muốn dùng tên ${esc(m.name)} đều phải nhập PIN này. Đừng chia sẻ PIN, kể cả trong nhóm chat.</p>`);
+  setTimeout(() => (document.getElementById('pinBox') || document.getElementById('pinNew'))?.focus(), 250);
+}
+function openChangePin(){
+  if (needLogin()) return;
+  sheetCtx = { kind: 'changePin', id: S.me };
+  openSheet(`<h3>Đổi PIN của ${esc(mName(S.me))}</h3>
+    <label class="field"><span>PIN hiện tại</span><input class="in" id="pinOld" type="password" inputmode="numeric" maxlength="12"></label>
+    <label class="field"><span>PIN mới</span><input class="in" id="pinNew" type="password" inputmode="numeric" maxlength="12"></label>
+    <label class="field"><span>Nhập lại PIN mới</span><input class="in" id="pinNew2" type="password" inputmode="numeric" maxlength="12"></label>
+    <button class="btn full" data-act="doChangePin">Đổi PIN</button>
+    <p class="small muted">Đổi PIN sẽ đăng xuất các máy khác và huỷ liên kết bot Zalo của bạn (liên kết lại bằng PIN mới).</p>`);
+}
+function openMemberView(id){
+  const m = mById(id); if (!m) return;
+  openSheet(`<div style="display:flex;align-items:center;gap:12px">${av(id,'l')}<div><h3 style="margin:0">${esc(m.name)}</h3><div class="small muted">${m.hasPin ? 'Đã có PIN' : 'Chưa có PIN'}</div></div></div>
+    ${payInfoHtml(m)}<p class="small muted">Chỉ ${esc(m.name)} mới sửa được thông tin này.</p>`);
+}
+function openMemberForm(id){
+  const m = id ? mById(id) : { name: '', bank: '', account: '', holder: '', payNote: '', qr: '' };
+  sheetCtx = { kind: 'member', id, qr: m.qr || '' };
+  openSheet(`<h3>${id ? 'Sửa thành viên' : 'Thêm thành viên'}</h3>
+  <label class="field"><span>Tên hiển thị</span><input class="in" id="mfName" value="${esc(m.name)}" placeholder="Ví dụ: Bình" autocomplete="off"></label>
+  <h2 style="margin-top:18px">Thông tin nhận tiền <span class="muted small" style="font-weight:400">(không bắt buộc)</span></h2>
+  <p class="small muted" style="margin-top:0">Điền số tài khoản, tải ảnh mã QR, hoặc cả hai.</p>
+  <div class="grid2"><label class="field"><span>Ngân hàng</span><input class="in" id="mfBank" value="${esc(m.bank)}" placeholder="Vietcombank"></label>
+  <label class="field"><span>Số tài khoản</span><input class="in" id="mfAcc" value="${esc(m.account)}" inputmode="numeric"></label></div>
+  <label class="field"><span>Chủ tài khoản</span><input class="in" id="mfHolder" value="${esc(m.holder)}" placeholder="NGUYEN VAN BINH"></label>
+  <label class="field"><span>Ghi chú</span><input class="in" id="mfNote" value="${esc(m.payNote)}" placeholder="Ví dụ: ghi nội dung 'an trua'"></label>
+  <label class="field"><span>Ảnh mã QR</span><input class="in" type="file" accept="image/*" id="mfQr"></label>
+  <div id="mfQrPrev">${m.qr ? `<img src="${m.qr}" alt="" style="max-width:160px;border-radius:8px"><br><button class="btn ghost" data-act="rmQr">Bỏ ảnh QR</button>` : ''}</div>
+  <div class="btns" style="margin-top:14px">${id ? `<button class="btn sec" data-act="delMember" data-id="${id}">Xoá</button><button class="btn sec" data-act="changePin">Đổi PIN</button>` : ''}<button class="btn" data-act="saveMember">Lưu</button></div>`);
+  setTimeout(() => $('#mfName')?.focus(), 250);
+}
+function compressImage(file, max = 480, q = 0.82){
+  return new Promise((res, rej) => {
+    const img = new Image(); const url = URL.createObjectURL(file);
+    img.onload = () => { const r = Math.min(1, max / Math.min(img.width, img.height), (max * 3) / Math.max(img.width, img.height)); const c = document.createElement('canvas'); c.width = Math.round(img.width * r); c.height = Math.round(img.height * r); const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg', q)); };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('bad image')); };
+    img.src = url;
+  });
+}
+
+/* ---------- bill editor ---------- */
+let E = null;
+function newEditor(bill){
+  const base = bill ? JSON.parse(JSON.stringify(bill)) : null;
+  E = {
+    id: base?.id || null, step: 'input', mode: 'text', text: '', image: null,
+    merchant: base?.merchant || '', date: base?.date || todayLocal(), payerId: base?.payerId || S.me || S.members[0]?.id || '', method: base?.method || 'transfer',
+    items: (base?.items || []).map(it => ({ ...it, _k: uid(), shares: { ...(it.shares || {}) } })),
+    image: base?.image || '', imageData: '', vat: base?.vat || 0, service: base?.service || 0, discount: base?.discount || 0, total: base?.total || 0,
+    participants: null, sel: null, busy: false, warn: ''
+  };
+  if (base) { const ids = new Set(); E.items.forEach(it => Object.keys(it.shares).forEach(k => ids.add(k))); ids.add(E.payerId); E.participants = ids.size > 1 ? [...ids].filter(mById) : null; E.step = (base.draft && E.items.length) ? 'split' : 'input'; E.wasDraft = !!base.draft; }
+}
+function openEditor(bill){ if (!S.members.length) { toast('Thêm thành viên trước khi tạo bill.'); S.tab = 'members'; render(); return; } newEditor(bill); $('#overlay').classList.add('open'); document.body.style.overflow = 'hidden'; renderEditor(); }
+function closeEditor(){ $('#overlay').classList.remove('open'); document.body.style.overflow = ''; E = null; setTimeout(poll, 300); }
+function edTotals(){ return computeBill({ items: E.items, vat: E.vat, service: E.service, discount: E.discount, total: E.total, payerId: E.payerId }); }
+
+function renderEditor(){
+  const o = $('#overlay');
+  const head = `<div class="ov-head"><button class="btn ghost" data-act="closeEditor">Huỷ</button><div class="ttl">${E.step==='input' ? (E.id ? 'Sửa bill' : 'Bill mới') : 'Chia món'}</div><button class="btn ghost" style="visibility:hidden">Huỷ</button></div><div class="steps" aria-label="Bước ${E.step==='input'?1:2} trên 2"><i class="on"></i><i class="${E.step==='split'?'on':''}"></i></div>`;
+  o.innerHTML = head + `<div class="wrap" style="padding-bottom:40px">${E.step === 'input' ? edInput() : edSplit()}</div>`;
+}
+function edInput(){
+  const c = edTotals();
+  const aiNote = sample ? '' : `<div class="note">AI đọc bill chưa được bật (cần API key trong Apps Script). Bạn vẫn dùng được "Tách nhanh" và nhập tay.</div>`;
+  let src = '';
+  if (E.mode === 'text') src = `<textarea class="in" data-f="text" placeholder="Ví dụ: Lẩu Thái 480k, Minh trả ck. An Bình Chi Dũng ăn chung, Chi thêm trà đào 35k">${esc(E.text)}</textarea>
+    <div class="btns" style="margin-top:8px"><button class="btn sec" data-act="quickParse">Tách nhanh</button>${sample ? `<button class="btn" data-act="aiText" ${E.busy?'disabled':''}>${E.busy?'Đang đọc…':'Đọc bằng AI'}</button>` : ''}</div>`;
+  else if (E.mode === 'photo') src = `<input class="in" type="file" accept="image/*" id="billImg">
+    ${E.imageData || E.image ? '<p class="small pos" style="margin:6px 0 0">Đã đính kèm ảnh bill, sẽ lưu vào Google Drive.</p>' : '<p class="small muted" style="margin:6px 0 0">Ảnh được lưu kèm bill để đối chiếu sau.</p>'}
+    ${sample ? `<button class="btn full" style="margin-top:8px" data-act="aiPhoto" ${E.busy?'disabled':''}>${E.busy?'Đang đọc bill… (5–30 giây)':'Đọc bill bằng AI'}</button><p class="small muted">AI chỉ tạo bản nháp. Bạn kiểm tra lại từng món bên dưới trước khi chia.</p>` : '<p class="small muted">Nhập các món ở danh sách bên dưới.</p>'}`;
+  else src = `<p class="small muted" style="margin:4px 0">Nhập từng món ở danh sách bên dưới.</p>`;
+  const diff = (+E.total > 0) ? (+E.total - (c.sub + (+E.vat||0) + (+E.service||0) - (+E.discount||0))) : 0;
+  const payers = S.members.map(m => `<option value="${m.id}" ${m.id===E.payerId?'selected':''}>${esc(m.name)}</option>`).join('');
+  return `${aiNote}
+  <div class="seg" style="margin-top:14px"><button class="${E.mode==='text'?'on':''}" data-act="edMode" data-v="text">Gõ nhanh</button><button class="${E.mode==='manual'?'on':''}" data-act="edMode" data-v="manual">Từng món</button><button class="${E.mode==='photo'?'on':''}" data-act="edMode" data-v="photo">Chụp bill</button></div>
+  <div style="margin-top:10px">${src}</div>
+  ${E.warn ? `<div class="note">${esc(E.warn)}</div>` : ''}
+  <h2>Thông tin bill</h2>
+  <label class="field"><span>Tên quán</span><input class="in" data-f="merchant" value="${esc(E.merchant)}" placeholder="Ví dụ: Lẩu Thái Ba Con Cua"></label>
+  <div class="grid2"><label class="field"><span>Ngày</span><input class="in" type="date" data-f="date" value="${esc(E.date)}"></label>
+  <label class="field"><span>Người trả</span><select class="in" data-f="payerId">${payers}</select></label></div>
+  <label class="field"><span>Thanh toán bằng</span><select class="in" data-f="method">${Object.entries(METHODS).map(([k, v]) => `<option value="${k}" ${k===E.method?'selected':''}>${v}</option>`).join('')}</select></label>
+  <h2>Món (${E.items.length})</h2>
+  <div class="list">${E.items.length ? `<div class="item-row hd small muted" style="padding-top:8px;padding-bottom:2px"><span>Tên món</span><span>SL</span><span>Đơn giá</span><span></span></div>` : ''}
+  ${E.items.map((it, i) => `<div class="item-row"><input aria-label="Tên món" data-f="item.name" data-i="${i}" value="${esc(it.name)}" placeholder="Tên món"><input aria-label="Số lượng" data-f="item.qty" data-i="${i}" value="${it.qty}" inputmode="numeric"><input aria-label="Đơn giá" data-f="item.unit" data-i="${i}" value="${it.unitPrice ? it.unitPrice.toLocaleString('vi-VN') : ''}" inputmode="numeric" placeholder="45k"><button class="x" data-act="rmItem" data-i="${i}" aria-label="Xoá món">×</button><span class="sub" id="amt${i}">= ${fmt(it.amount)}</span></div>`).join('')}
+  <div style="padding:8px 10px"><button class="btn ghost" data-act="addItem">+ Thêm món</button></div></div>
+  <h2>Phụ phí và giảm giá</h2>
+  <p class="small muted" style="margin-top:0">Gõ số tiền hoặc phần trăm, ví dụ 8%.</p>
+  <div class="grid2"><label class="field"><span>VAT</span><input class="in" data-f="vat" value="${E.vat ? E.vat.toLocaleString('vi-VN') : ''}" placeholder="0"></label>
+  <label class="field"><span>Phí dịch vụ / ship</span><input class="in" data-f="service" value="${E.service ? E.service.toLocaleString('vi-VN') : ''}" placeholder="0"></label>
+  <label class="field"><span>Giảm giá</span><input class="in" data-f="discount" value="${E.discount ? E.discount.toLocaleString('vi-VN') : ''}" placeholder="0"></label>
+  <label class="field"><span>Tổng trên bill (nếu khác)</span><input class="in" data-f="total" value="${E.total ? E.total.toLocaleString('vi-VN') : ''}" placeholder="Để trống = tự tính"></label></div>
+  <div class="list totals" id="edSum">${sumHtml(c, diff)}</div>
+  <button class="btn full" style="margin-top:16px" data-act="toSplit">Tiếp: chia món</button>
+  <button class="btn sec full" style="margin-top:8px" data-act="saveDraft">Lưu nháp, chia sau</button>
+  <p class="small muted" style="text-align:center;margin:6px 0 0">Vội thì chỉ cần nhập người trả và tổng tiền. Bill nháp chưa tính nợ cho ai.</p>`;
+}
+function sumHtml(c, diff){
+  return `<div><span>Tạm tính</span><span>${fmt(c.sub)}</span></div><div class="big"><span>Tổng thực trả</span><span>${fmt(c.total)}</span></div>${c.sub === 0 && c.total > 0 ? `<div class="small muted"><span>Chưa nhập món: khi chia, cả bill thành một dòng "Cả bill".</span></div>` : Math.abs(diff) >= 1 ? `<div class="neg small"><span>Tổng trên bill lệch với tổng tính ${diff > 0 ? '+' : '−'}${fmt(Math.abs(diff))}. Phần lệch được chia theo tỷ lệ tiền món.</span></div>` : ''}`;
+}
+function refreshSum(){ const el = $('#edSum'); if (!el) return; const c = edTotals(); const diff = (+E.total > 0) ? (+E.total - (c.sub + (+E.vat||0) + (+E.service||0) - (+E.discount||0))) : 0; el.innerHTML = sumHtml(c, diff); }
+
+function edSplit(){
+  if (!E.participants) E.participants = S.members.map(m => m.id);
+  if (!E.sel || !E.participants.includes(E.sel)) E.sel = E.participants[0] || null;
+  const c = edTotals();
+  const selColor = E.sel ? mColor(E.sel) : 'var(--blue)';
+  const people = S.members.map(m => { const inB = E.participants.includes(m.id); const share = m.id === E.payerId ? c.raw[m.id] : c.owes[m.id]; return `<button style="--c:${m.color || 'var(--brand)'}" class="person ${m.id===E.sel?'on':''} ${inB?'':'off'}" data-act="${inB?'selPerson':'togglePart'}" data-id="${m.id}" aria-pressed="${m.id===E.sel}">${av(m.id)}<span class="nm">${esc(m.name)}</span><span class="mn">${inB ? fmt(share || 0) : 'vắng'}</span></button>`; }).join('');
+  const dishes = E.items.map((it, i) => {
+    const ids = Object.entries(it.shares).filter(([, v]) => v > 0).map(([k]) => k);
+    const mine = E.sel && it.shares[E.sel] > 0;
+    return `<div class="dish ${mine?'mine':''} ${ids.length?'':'un'}" style="--sel:${selColor}"><span class="check" aria-hidden="true" data-act="tapDish" data-i="${i}"></span><button data-act="tapDish" data-i="${i}" style="flex:1;min-width:0;border:0;background:none;text-align:left;padding:0"><span class="t" style="font-weight:600;display:block">${esc(it.name || 'Món')}${it.qty>1?` ×${it.qty}`:''}</span><span class="dots">${ids.map(k => av(k,'s')).join('')}${ids.some(k => it.shares[k] > 1) ? `<span class="small muted" style="margin-left:12px">${ids.map(k => it.shares[k] > 1 ? esc(mName(k)) + ' ×' + it.shares[k] : '').filter(Boolean).join(', ')}</span>` : ''}</span></button><span class="amt">${fmt(it.amount)}</span><button class="more" data-act="dishMore" data-i="${i}" aria-label="Chia món ${esc(it.name)} cho nhiều người">⋯</button></div>`;
+  }).join('');
+  const assignedAmt = c.sub - c.unassigned; const pct = c.sub > 0 ? Math.round(assignedAmt / c.sub * 100) : 0;
+  const summary = E.participants.map(id => `<div class="kv"><span>${esc(mName(id))}${id===E.payerId?' (người trả)':''}</span><b>${id===E.payerId ? fmt(c.raw[id] || 0) : fmt(c.owes[id] || 0)}</b></div>`).join('');
+  return `<p class="small muted" style="margin-top:14px">Chọn một người ở hàng trên, rồi chạm vào những món người đó ăn. Món ăn chung: bấm ⋯ để chọn nhiều người. Chạm vào người đang mờ để thêm họ vào bữa.</p>
+  <div class="people">${people}</div>
+  <div class="btns" style="margin-bottom:10px"><button class="btn sec" data-act="splitAll">Chia đều cả bill</button><button class="btn sec" data-act="clearAll">Bỏ gán hết</button></div>
+  <div class="list">${dishes || '<div class="empty" style="border:0">Chưa có món. Quay lại bước 1 để thêm.</div>'}</div>
+  <h2>Mỗi người trả</h2><div class="pay-card">${summary}<p class="small muted" style="margin:6px 0 0">Đã gồm VAT, phí, giảm giá theo tỷ lệ; làm tròn lên 1.000đ, phần dư thuộc về người trả.</p></div>
+  <div class="progress"><div class="bar"><i style="width:${pct}%"></i></div>
+  <div class="small" style="margin-bottom:8px">${c.unassignedCount ? `Còn ${c.unassignedCount} món chưa gán · ${fmt(c.unassigned)}` : 'Đã gán hết các món'}</div>
+  <div class="btns"><button class="btn sec" data-act="toInput">Quay lại</button><button class="btn sec" data-act="saveDraft">Lưu nháp</button><button class="btn" data-act="saveBill">Lưu bill</button></div></div>`;
+}
+function openDishSheet(i){
+  const it = E.items[i]; sheetCtx = { kind: 'dish', i };
+  openSheet(`<h3>${esc(it.name || 'Món')} · ${fmt(it.amount)}</h3><p class="small muted">Chọn số phần cho mỗi người. 2 phần = ăn gấp đôi người 1 phần.</p>
+  <div class="list">${E.participants.map(id => `<div class="row">${av(id)}<span class="grow t">${esc(mName(id))}</span><span class="stepper"><button data-act="shareDec" data-id="${id}" aria-label="Bớt">−</button><b>${it.shares[id] || 0}</b><button data-act="shareInc" data-id="${id}" aria-label="Thêm">+</button></span></div>`).join('')}</div>
+  <div class="btns" style="margin-top:12px"><button class="btn sec" data-act="dishAll">Cả bàn</button><button class="btn sec" data-act="dishNone">Bỏ gán</button>${it.qty > 1 ? `<button class="btn sec" data-act="dishSplitQty">Tách thành ${it.qty} dòng</button>` : ''}</div>
+  <button class="btn full" style="margin-top:10px" data-act="closeSheet">Xong</button>`);
+}
+
+/* ---------- parsing ---------- */
+function matchMember(name){
+  const raw = String(name || '').toLowerCase().trim(); const n = norm(name); if (!n) return null;
+  const exactRaw = S.members.filter(m => m.name.toLowerCase().trim() === raw); if (exactRaw.length === 1) return exactRaw[0].id;
+  if (['tôi','mình','tui','tớ','me','i'].includes(raw)) return S.me && mById(S.me) ? S.me : null;
+  const exact = S.members.filter(m => norm(m.name) === n); if (exact.length === 1) return exact[0].id;
+  const last = S.members.filter(m => norm(m.name).split(/\s+/).pop() === n); if (last.length === 1) return last[0].id;
+  if (n.length >= 3) { const pre = S.members.filter(m => norm(m.name).startsWith(n)); if (pre.length === 1) return pre[0].id; }
+  return null;
+}
+function quickParse(text){
+  const safeText = String(text || '').replace(/\(([^)]*)\)/g, (m, g) => '(' + g.replace(/[,;]/g, ' ') + ')');
+  const chunks = safeText.split(/[\n,;]+/).map(s => s.trim()).filter(Boolean);
+  const items = []; let vatPct = 0, payer = null, method = null;
+  const eatersFrom = (paren, rest) => {
+    const words = ((paren || '') + ' ' + (rest || '')).split(/[\s,]+/).filter(Boolean);
+    return words.filter(w => matchMember(w));
+  };
+  const clean = s => s.replace(/\(.*?\)/g, '').replace(/\s+/g, ' ').trim();
+  for (const c of chunks){
+    const nc = norm(c);
+    let m;
+    if ((m = nc.match(/vat\s*(\d+(?:[.,]\d+)?)\s*%/))) { vatPct = parseFloat(m[1].replace(',', '.')); continue; }
+    if ((m = c.match(/([\p{L}]+)\s+(?:trả|tra|pay|paid)(?![\p{L}])/iu))) { const id = matchMember(m[1]); if (id) payer = id; }
+    if (/(^|\s)ck(\s|$)|chuyen khoan/.test(nc)) method = 'transfer';
+    else if (/tien mat/.test(nc)) method = 'cash';
+    else if (/quet the|(^|\s)the(\s|$)/.test(nc)) method = 'card';
+    else if (/momo|zalopay|vi dien tu/.test(nc)) method = 'ewallet';
+    const paren = (c.match(/\((.*?)\)/) || [])[1] || '';
+    if ((m = c.match(/(\d+)\s*[x×*]\s*(\d[\d.,]*\s*(?:k|K|tr|nghìn|ngàn)?)/))) {
+      const qty = +m[1], unit = parseMoney(m[2]);
+      if (unit > 0) { const before = c.slice(0, m.index), after = c.slice(m.index + m[0].length); items.push({ name: clean(before) || 'Món', qty, unitPrice: unit, amount: qty * unit, eaters: eatersFrom(paren, clean(after)) }); continue; }
+    }
+    const toks = [...c.matchAll(/\d[\d.,]*\s*(?:tr\d{0,3}|triệu|k|K|nghìn|ngàn)?/g)];
+    for (let t = toks.length - 1; t >= 0; t--){
+      const v = parseMoney(toks[t][0]);
+      if (v >= 1000) { const before = c.slice(0, toks[t].index), after = c.slice(toks[t].index + toks[t][0].length); items.push({ name: clean(before) || 'Món', qty: 1, unitPrice: v, amount: v, eaters: eatersFrom(paren, clean(after)) }); break; }
+    }
+  }
+  return { items, vatPct, payer, method };
+}
+function applyParsed(p, fromAI){
+  const unknown = new Set();
+  const toShares = names => { const sh = {}; for (const n of (names || [])) { const id = matchMember(n); if (id) sh[id] = (sh[id] || 0) + 1; else unknown.add(n); } return sh; };
+  const items = (p.items || []).filter(it => (+it.amount || (+it.unitPrice * (+it.qty || 1))) > 0).map(it => {
+    const qty = Math.max(1, Math.round(+it.qty || 1)); const amount = Math.round(+it.amount || (+it.unitPrice * qty)); const unitPrice = Math.round(+it.unitPrice || amount / qty);
+    return { _k: uid(), name: String(it.name || 'Món'), qty, unitPrice, amount, shares: toShares(it.eaters) };
+  });
+  if (!items.length) { E.warn = 'Chưa tách được món nào. Hãy thử viết theo mẫu "tên món 45k" hoặc nhập tay.'; renderEditor(); return; }
+  E.items = items;
+  if (p.merchant) E.merchant = p.merchant;
+  if (p.date && /^\d{4}-\d{2}-\d{2}$/.test(p.date)) E.date = p.date;
+  if (p.payer) { const id = typeof p.payer === 'string' && mById(p.payer) ? p.payer : matchMember(p.payer); if (id) E.payerId = id; else unknown.add(p.payer); }
+  if (p.method && METHODS[p.method]) E.method = p.method;
+  const sub = items.reduce((s, it) => s + it.amount, 0);
+  E.vat = Math.round(+p.vat || (p.vatPct ? sub * p.vatPct / 100 : 0)); E.service = Math.round(+p.serviceFee || 0); E.discount = Math.round(+p.discount || 0);
+  E.total = (+p.total > 0 && Math.abs(+p.total - (sub + E.vat + E.service - E.discount)) >= 1) ? Math.round(+p.total) : 0;
+  const ids = new Set(); items.forEach(it => Object.keys(it.shares).forEach(k => ids.add(k)));
+  E.participants = ids.size ? [...new Set([...ids, E.payerId])] : null;
+  E.warn = (unknown.size ? `Chưa có trong nhóm: ${[...unknown].join(', ')}. Thêm ở tab Thành viên nếu cần. ` : '') + `Đã tách ${items.length} món${fromAI ? ' bằng AI' : ''}. Kiểm tra lại giá trước khi chia.`;
+  renderEditor();
+}
+function aiPrompt(text){
+  const names = S.members.map(m => m.name).join(', ');
+  return `Bạn đọc hoá đơn hoặc ghi chú bữa ăn tiếng Việt và trả về DUY NHẤT một JSON object, không giải thích.
+Thành viên nhóm: ${names}. Người đang nhập: ${mName(S.me)} (nếu văn bản nói "tôi", "mình", "tui" thì là người này).
+Quy ước: "45k" = 45000; "1tr2" = 1200000; "45.000" = 45000. Bỏ qua dòng tiền khách đưa, tiền thừa. VAT, phí phục vụ, phí ship là phụ phí, không phải món. Khuyến mãi, giảm giá, dòng số âm là discount (số dương).
+Nếu chỉ có tổng tiền và "chia đều" cho những người được nêu tên, tạo một món "Cả bill" với eaters là những người đó. "N người" không nêu tên thì eaters rỗng. Món nhiều người ăn chung thì eaters liệt kê tất cả người đó; người được nêu tên thêm món riêng thì món đó chỉ có người đó.
+Định dạng: {"merchant":string|null,"date":"YYYY-MM-DD"|null,"items":[{"name":string,"qty":number,"unitPrice":number,"amount":number,"eaters":[string]}],"vat":number,"serviceFee":number,"discount":number,"total":number|null,"payer":string|null,"method":"cash"|"transfer"|"card"|"ewallet"|null}
+Tên trong eaters và payer phải lấy đúng từ danh sách thành viên nếu khớp; tên lạ thì giữ nguyên như văn bản.
+${text ? 'Nội dung:\n' + text : 'Đọc ảnh hoá đơn đính kèm.'}`;
+}
+function sampleErr(e){
+  const c = e && (e.code || e.error);
+  if (c === 'ai_disabled') return 'AI chưa được bật trong Apps Script.';
+  if (typeof c === 'string' && c.indexOf('ai_error_429') === 0) return 'Đã hết lượt AI miễn phí trong lúc này. Thử lại sau ít phút hoặc nhập tay.';
+  if (c === 'not_granted') return 'Bạn chưa cho phép dùng AI. Hãy nhập tay hoặc dùng Tách nhanh.';
+  if (c === 'rate_limited') return 'AI đang bận. Đợi một lúc rồi thử lại.';
+  if (c === 'image_rejected') return 'Ảnh không đọc được (định dạng hoặc dung lượng). Thử chụp lại.';
+  if (c === 'cancelled') return 'Đã dừng.';
+  return 'AI chưa đọc được. Hãy nhập tay hoặc thử lại.';
+}
+async function runAI(text, image){
+  if (!sample || E.busy) return;
+  E.busy = true; E.warn = ''; renderEditor();
+  try { const p = await sample.json(aiPrompt(text), { images: image ? [image] : undefined, modelTier: 'default' }); E.busy = false; applyParsed(p || {}, true); }
+  catch (e) { E.busy = false; E.warn = sampleErr(e); renderEditor(); }
+}
+
+/* ---------- chat ---------- */
+function ledgerContext(){
+  const L = ledger();
+  const lines = [];
+  lines.push('Thành viên và số dư ròng (dương = được nợ, âm = đang nợ): ' + S.members.map(m => `${m.name}: ${Math.round(L.net[m.id] || 0)}`).join('; '));
+  lines.push('Khoản còn nợ theo từng bill: ' + (billDebts().filter(d => d.remaining > 0).map(d => `${mName(d.from)} nợ ${mName(d.to)} ${d.remaining} (bill ${d.bill.merchant || 'Bữa ăn'} ${d.date}${d.paid ? ', đã trả ' + d.paid : ''})`).join('; ') || 'không có'));
+  const pairs = []; for (const a of S.members) for (const b of S.members) { if (a.id < b.id) { const v = Math.round(L.owe(a.id, b.id)); if (v) pairs.push(v > 0 ? `${a.name} nợ ${b.name} ${v}` : `${b.name} nợ ${a.name} ${-v}`); } }
+  lines.push('Nếu gộp theo từng cặp (bù trừ hai chiều): ' + (pairs.join('; ') || 'không có'));
+  lines.push('Bill nháp chưa chia (chưa tính nợ): ' + (S.bills.filter(b => b.draft).map(b => `${b.date} ${b.merchant || 'Bữa ăn'} do ${mName(b.payerId)} trả ${Math.round(computeBill({ ...b, draft: false }).total)}`).join('; ') || 'không có'));
+  lines.push('Bill đã chia (mới nhất trước):');
+  [...S.bills].filter(b => !b.draft).sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 80).forEach(b => { const c = computeBill(b); lines.push(`- ${b.date} | ${b.merchant || 'Bữa ăn'} | ${mName(b.payerId)} trả ${Math.round(c.total)} bằng ${METHODS[b.method] || '?'} | món: ${(b.items || []).map(it => `${it.name} ${it.amount} (${Object.keys(it.shares || {}).filter(k => it.shares[k] > 0).map(mName).join(', ')})`).join('; ')} | phải trả: ${Object.entries(c.owes).map(([k, v]) => `${mName(k)} ${v}`).join(', ')}`); });
+  lines.push('Thanh toán đã ghi: ' + (S.payments.map(p => `${p.date} ${mName(p.from)} trả ${mName(p.to)} ${p.amount}`).join('; ') || 'không có'));
+  lines.push('Check (đã xem, chưa trả): ' + (S.checks.map(c => `${mName(c.from)} check khoản trả ${mName(c.to)} ${c.amount}`).join('; ') || 'không có'));
+  return lines.join('\n');
+}
+async function askSend(q){
+  q = (q || '').trim(); if (!q || !sample || S.asking) return;
+  S.chat.push({ role: 'user', content: q }); S.chat.push({ role: 'assistant', content: 'Đang xem sổ…' }); S.asking = true; render();
+  const rules = `Bạn là trợ lý tra cứu công nợ ăn chung của một nhóm. Người hỏi là ${mName(S.me)}; "mình", "tôi" nghĩa là người này. Chỉ trả lời dựa trên dữ liệu dưới đây, bằng tiếng Việt, ngắn gọn, số tiền viết dạng 120.000đ. Nếu dữ liệu không đủ để trả lời, nói rõ là không có.\n\nDỮ LIỆU:\n${ledgerContext()}`;
+  const turns = [{ role: 'user', content: rules }, { role: 'assistant', content: 'Đã hiểu.' }, ...S.chat.slice(0, -1).slice(-10)];
+  const idx = S.chat.length - 1;
+  try {
+    const text = await sample.chat(turns);
+    S.chat[idx].content = text;
+  } catch (e) { S.chat[idx].content = sampleErr(e); }
+  S.asking = false; render();
+}
+
+/* ---------- events ---------- */
+let pressTimer = null, longPressed = false;
+document.addEventListener('click', async ev => {
+  const t = ev.target.closest('[data-act]'); if (!t) return;
+  const a = t.dataset.act, id = t.dataset.id, i = +t.dataset.i;
+  switch (a){
+    case 'tab': S.tab = t.dataset.tab; render(); window.scrollTo(0, 0); break;
+    case 'saveKey': { const k = ($('#keyBox').value || '').trim(); if (!k) break; KEY = k; try { localStorage.setItem('anchung.key', k); localStorage.removeItem('anchung.cache'); } catch {} S.needKey = false; S.ready = false; render(); loadAll(); break; }
+    case 'reload': S.loadErr = ''; toast('Đang làm mới…'); render(); loadAll(); break;
+    case 'homeMode': S.homeMode = t.dataset.v; try { localStorage.setItem('anchung.mode', S.homeMode); } catch {} render(); break;
+    case 'openBillDebt': openBillDebt(t.dataset.bill, t.dataset.from, t.dataset.to); break;
+    case 'pickMe': openPickMe(); break;
+    case 'pickLogin': if (id === S.me && S.token) { closeSheet(); break; } openLogin(id); break;
+    case 'logout': logout(); break;
+    case 'changePin': openChangePin(); break;
+    case 'doLogin': case 'doCreatePin': {
+      const mid = sheetCtx.id; let body;
+      if (a === 'doLogin') { const pin = $('#pinBox').value; if (!pin) break; body = { action: 'login', memberId: mid, pin }; }
+      else { const p1 = $('#pinNew').value, p2 = $('#pinNew2').value; if (p1.length < 4 || p1.length > 12) { toast(PIN_ERR.bad_pin); break; } if (p1 !== p2) { toast('Hai lần nhập PIN chưa khớp.'); break; } body = { action: 'setPin', memberId: mid, pin: p1 }; }
+      t.disabled = true; t.textContent = 'Đang kiểm tra…';
+      try { const j = await apiPost(body); setSession(j.memberId, j.token); const m = mById(mid); if (m) m.hasPin = true; cacheLocal(); closeSheet(); render(); toast('Xin chào ' + mName(mid)); flush(); }
+      catch (e) { toast(PIN_ERR[e && e.error] || 'Chưa đăng nhập được, kiểm tra mạng.'); t.disabled = false; t.textContent = a === 'doLogin' ? 'Đăng nhập' : 'Tạo PIN và đăng nhập'; }
+      break;
+    }
+    case 'doChangePin': {
+      const o = $('#pinOld').value, p1 = $('#pinNew').value, p2 = $('#pinNew2').value;
+      if (p1.length < 4 || p1.length > 12) { toast(PIN_ERR.bad_pin); break; } if (p1 !== p2) { toast('Hai lần nhập PIN mới chưa khớp.'); break; }
+      try { const j = await apiPost({ action: 'setPin', memberId: S.me, oldPin: o, pin: p1 }); setSession(j.memberId, j.token); closeSheet(); toast('Đã đổi PIN'); }
+      catch (e) { toast(PIN_ERR[e && e.error] || 'Chưa đổi được PIN.'); }
+      break;
+    }
+    case 'closeSheet': closeSheet(); if (E) renderEditor(); break;
+    case 'copy': copyText(t.dataset.t); break;
+    case 'openPerson': openPerson(id, t.dataset.dir, +t.dataset.amt); break;
+    case 'doCheck': {
+      if (needLogin()) break;
+      const x = sheetCtx; const v = parseMoney($('#payAmt').value);
+      if (x.kind === 'billDebt') { if (await safe(store.set('checks', x.from + '__' + x.to + '__' + x.billId, { from: x.from, to: x.to, billId: x.billId, amount: v || x.remaining, at: Date.now() }), 'Đã check')) closeSheet(); }
+      else { if (await safe(store.set('checks', S.me + '__' + x.id, { from: S.me, to: x.id, amount: v || x.amt, at: Date.now() }), 'Đã check')) closeSheet(); }
+      break;
+    }
+    case 'doPay': {
+      if (needLogin()) break;
+      const x = sheetCtx; const v = parseMoney($('#payAmt').value); if (!(v > 0)) { toast('Nhập số tiền lớn hơn 0.'); break; }
+      if (x.kind === 'billDebt') {
+        if (await safe(store.add('payments', { from: x.from, to: x.to, amount: v, billId: x.billId, date: todayLocal(), at: Date.now() }), 'Đã ghi Done payment')) { if (checkFor(x.from, x.to, x.billId)) safe(store.del('checks', x.from + '__' + x.to + '__' + x.billId)); closeSheet(); }
+      } else {
+        // "gộp": pay the net and record an offset so both directions' bills show as settled
+        const debts = billDebts(); const mine = debts.filter(d => d.from === S.me && d.to === x.id).reduce((s, d) => s + d.remaining, 0); const theirs = debts.filter(d => d.from === x.id && d.to === S.me).reduce((s, d) => s + d.remaining, 0);
+        const offset = Math.min(mine, theirs);
+        if (await safe(store.add('payments', { from: S.me, to: x.id, amount: v, offset, date: todayLocal(), at: Date.now() }), 'Đã ghi Done payment')) { if (checkFor(S.me, x.id)) safe(store.del('checks', S.me + '__' + x.id)); closeSheet(); }
+      }
+      break;
+    }
+    case 'undoPay': if (confirm('Đánh dấu khoản này là chưa nhận được? Số nợ sẽ quay lại.')) { if (await safe(store.del('payments', id), 'Đã mở lại khoản nợ')) closeSheet(); } break;
+    case 'openBill': openBill(id); break;
+    case 'exportCSV': exportCSV(); break;
+    case 'editBill': { const b = S.bills.find(x => x.id === id); if (b && !canEditBill(b)) { toast('Bạn không có quyền sửa bill này.'); break; } closeSheet(); openEditor(b); break; }
+    case 'delBill': if (confirm('Xoá bill này? Các khoản nợ từ bill sẽ mất theo.')) { if (await safe(store.del('bills', id), 'Đã xoá bill')) closeSheet(); } break;
+    case 'editMember': { const m = id && mById(id); if (m && !canEditMember(m)) { openMemberView(id); break; } openMemberForm(id); break; }
+    case 'rmQr': sheetCtx.qr = ''; $('#mfQrPrev').innerHTML = ''; break;
+    case 'saveMember': {
+      if (sheetCtx.id && needLogin()) break;
+      const name = $('#mfName').value.trim(); if (!name) { toast('Nhập tên thành viên.'); break; }
+      const dup = S.members.find(m => norm(m.name) === norm(name) && m.id !== sheetCtx.id); if (dup) { toast('Đã có người tên này. Thêm họ hoặc biệt danh để phân biệt.'); break; }
+      const old = sheetCtx.id ? mById(sheetCtx.id) : null;
+      const data = { name, bank: $('#mfBank').value.trim(), account: $('#mfAcc').value.trim(), holder: $('#mfHolder').value.trim(), payNote: $('#mfNote').value.trim(), qr: sheetCtx.qr || '', color: old?.color || COLORS[S.members.length % COLORS.length], createdAt: old?.createdAt || Date.now() };
+      const ok = sheetCtx.id ? await safe(store.set('members', sheetCtx.id, data), 'Đã lưu') : await safe(store.add('members', data), 'Đã thêm ' + name);
+      if (ok) closeSheet(); break;
+    }
+    case 'delMember': {
+      const used = S.bills.some(b => b.payerId === id || (b.items || []).some(it => (it.shares || {})[id] > 0)) || S.payments.some(p => p.from === id || p.to === id);
+      if (used) { toast('Người này đã có trong bill hoặc thanh toán nên không xoá được.'); break; }
+      if (!S.me || S.me !== id) { toast('Chỉ chính người đó được xoá hồ sơ của mình.'); break; }
+      if (confirm('Xoá thành viên này?')) { if (await safe(store.del('members', id), 'Đã xoá')) { logout(true); closeSheet(); render(); } } break;
+    }
+    case 'newBill': if (needLogin()) break; openEditor(null); break;
+    case 'newBillPhoto': if (needLogin()) break; openEditor(null); E.mode = 'photo'; renderEditor(); setTimeout(() => $('#billImg')?.click(), 0); break;
+    case 'scrollTo': document.getElementById(t.dataset.target)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); break;
+    case 'moreMenu': openSheet(`<h3>tuỳ chọn</h3><div class="list">
+      <button class="row" data-act="pickMe"><span class="grow"><span class="t">đổi tài khoản</span><span class="s">${S.me ? 'đang dùng: ' + esc(mName(S.me)) : 'chưa đăng nhập'}</span></span></button>
+      ${S.me ? '<button class="row" data-act="changePin"><span class="grow"><span class="t">đổi PIN</span></span></button>' : ''}
+      <button class="row" data-act="exportCSV"><span class="grow"><span class="t">xuất CSV</span><span class="s">theo tháng đang chọn ở tab bill</span></span></button>
+      <a class="row" href="../" style="text-decoration:none"><span class="grow"><span class="t">mở giao diện cũ</span><span class="s">cùng dữ liệu, cùng tài khoản</span></span></a>
+    </div><p class="small muted" style="margin-top:12px">Ăn chung · giao diện Metro (beta)</p>`); break;
+    case 'closeEditor': if (!E.items.length || confirm('Bỏ bill đang nhập?')) closeEditor(); break;
+    case 'edMode': E.mode = t.dataset.v; E.warn = ''; renderEditor(); break;
+    case 'quickParse': { const p = quickParse(E.text || ''); applyParsed({ items: p.items, vatPct: p.vatPct, payer: p.payer, method: p.method }, false); break; }
+    case 'aiText': if (!(E.text || '').trim()) { toast('Gõ nội dung bill trước.'); break; } runAI(E.text, null); break;
+    case 'aiPhoto': { const f = $('#billImg')?.files?.[0] || E.imageFile; if (!f) { toast('Chọn hoặc chụp ảnh bill trước.'); break; } runAI('', f); break; }
+    case 'addItem': E.items.push({ _k: uid(), name: '', qty: 1, unitPrice: 0, amount: 0, shares: {} }); renderEditor(); setTimeout(() => { const ins = document.querySelectorAll('[data-f="item.name"]'); ins[ins.length - 1]?.focus(); }, 0); break;
+    case 'rmItem': E.items.splice(i, 1); renderEditor(); break;
+    case 'toSplit': {
+      E.items = E.items.filter(it => it.amount > 0 || (it.name || '').trim());
+      if (!E.items.length && +E.total > 0) { E.items.push({ _k: uid(), name: 'Cả bill', qty: 1, unitPrice: +E.total, amount: +E.total, shares: {} }); E.total = 0; }
+      if (!E.items.length) { toast('Thêm ít nhất một món, hoặc một dòng "Cả bill" với tổng tiền.'); break; }
+      if (E.items.some(it => !(it.amount > 0))) { toast('Có món chưa có giá.'); renderEditor(); break; }
+      if (!E.payerId) { toast('Chọn người trả.'); break; }
+      E.step = 'split'; renderEditor(); $('#overlay').scrollTo(0, 0); break;
+    }
+    case 'toInput': E.step = 'input'; renderEditor(); break;
+    case 'selPerson': E.sel = id; renderEditor(); break;
+    case 'togglePart': if (!E.participants.includes(id)) E.participants.push(id); E.sel = id; renderEditor(); break;
+    case 'tapDish': { if (longPressed) { longPressed = false; break; } const it = E.items[i]; if (!E.sel) break; if (it.shares[E.sel] > 0) delete it.shares[E.sel]; else it.shares[E.sel] = 1; renderEditor(); break; }
+    case 'dishMore': openDishSheet(i); break;
+    case 'shareInc': case 'shareDec': { const it = E.items[sheetCtx.i]; const v = (it.shares[id] || 0) + (a === 'shareInc' ? 1 : -1); if (v > 0) it.shares[id] = v; else delete it.shares[id]; openDishSheet(sheetCtx.i); break; }
+    case 'dishAll': { const it = E.items[sheetCtx.i]; it.shares = {}; E.participants.forEach(p => it.shares[p] = 1); openDishSheet(sheetCtx.i); break; }
+    case 'dishNone': E.items[sheetCtx.i].shares = {}; openDishSheet(sheetCtx.i); break;
+    case 'dishSplitQty': { const it = E.items[sheetCtx.i]; const rows = Array.from({ length: it.qty }, (_, k) => ({ _k: uid(), name: `${it.name} (${k + 1})`, qty: 1, unitPrice: it.unitPrice, amount: it.unitPrice || Math.round(it.amount / it.qty), shares: {} })); E.items.splice(sheetCtx.i, 1, ...rows); closeSheet(); renderEditor(); break; }
+    case 'splitAll': E.items.forEach(it => { it.shares = {}; E.participants.forEach(p => it.shares[p] = 1); }); renderEditor(); break;
+    case 'clearAll': E.items.forEach(it => it.shares = {}); renderEditor(); break;
+    case 'saveDraft': {
+      if (!dbWritable) { toast('Bạn chỉ có quyền xem.'); break; }
+      let items = E.items.filter(it => it.amount > 0);
+      let total = +E.total || 0;
+      if (!items.length && total > 0) { items = [{ name: 'Cả bill', qty: 1, unitPrice: total, amount: total, shares: {} }]; total = 0; }
+      if (!items.length) { toast('Nhập ít nhất tổng tiền hoặc một món có giá.'); break; }
+      if (!E.payerId) { toast('Chọn người trả.'); break; }
+      const data = { ...(E.imageData ? { imageData: E.imageData } : (E.image ? { image: E.image } : {})), draft: true, merchant: E.merchant.trim() || (items.length === 1 ? items[0].name : `${items[0].name} và ${items.length - 1} món khác`), date: E.date, payerId: E.payerId, method: E.method, vat: +E.vat || 0, service: +E.service || 0, discount: +E.discount || 0, total,
+        items: items.map(it => ({ name: it.name || 'Món', qty: it.qty || 1, unitPrice: it.unitPrice || it.amount, amount: it.amount, shares: Object.fromEntries(Object.entries(it.shares || {}).filter(([, v]) => v > 0)) })),
+        createdAt: Date.now(), createdBy: S.me || null };
+      const ok = E.id ? await safe(store.set('bills', E.id, data), 'Đã lưu nháp') : await safe(store.add('bills', data), 'Đã lưu nháp, chia sau nhé');
+      if (ok) { closeEditor(); S.tab = 'home'; render(); }
+      break;
+    }
+    case 'splitDraft': { const b = S.bills.find(x => x.id === id); if (b && !canEditBill(b)) { openBill(id); break; } closeSheet(); if (b) openEditor(b); break; }
+    case 'saveBill': {
+      if (!dbWritable) { toast('Bạn chỉ có quyền xem.'); break; }
+      let c = edTotals();
+      if (c.unassignedCount) {
+        if (!confirm(`Còn ${c.unassignedCount} món chưa gán (${fmt(c.unassigned)}). Chia đều phần còn lại cho ${E.participants.length} người?`)) break;
+        E.items.forEach(it => { if (!Object.values(it.shares).some(v => v > 0)) E.participants.forEach(p => it.shares[p] = 1); });
+        c = edTotals();
+      }
+      if (!(c.total > 0)) { toast('Tổng bill phải lớn hơn 0.'); break; }
+      if (+E.discount > c.sub + (+E.vat||0) + (+E.service||0)) { toast('Giảm giá lớn hơn tổng bill.'); break; }
+      const data = { ...(E.imageData ? { imageData: E.imageData } : (E.image ? { image: E.image } : {})), merchant: E.merchant.trim() || (E.items.length === 1 ? E.items[0].name : `${E.items[0].name} và ${E.items.length - 1} món khác`), date: E.date, payerId: E.payerId, method: E.method, vat: +E.vat || 0, service: +E.service || 0, discount: +E.discount || 0, total: +E.total || 0,
+        items: E.items.map(it => ({ name: it.name || 'Món', qty: it.qty, unitPrice: it.unitPrice, amount: it.amount, shares: Object.fromEntries(Object.entries(it.shares).filter(([, v]) => v > 0)) })),
+        createdAt: Date.now(), createdBy: S.me || null };
+      const ok = E.id ? await safe(store.set('bills', E.id, data), 'Đã lưu thay đổi') : await safe(store.add('bills', data), 'Đã lưu bill');
+      if (ok) { closeEditor(); S.tab = 'home'; render(); }
+      break;
+    }
+    case 'askChip': askSend(t.textContent); break;
+    case 'askSend': { const b = $('#askBox'); const q = b.value; b.value = ''; askSend(q); break; }
+  }
+});
+// long-press on a dish opens the multi-person sheet
+document.addEventListener('pointerdown', ev => { const d = ev.target.closest('[data-act="tapDish"]'); if (!d) return; longPressed = false; clearTimeout(pressTimer); pressTimer = setTimeout(() => { longPressed = true; openDishSheet(+d.dataset.i); if (navigator.vibrate) navigator.vibrate(15); }, 480); });
+['pointerup', 'pointercancel', 'pointerleave'].forEach(n => document.addEventListener(n, () => clearTimeout(pressTimer)));
+document.addEventListener('contextmenu', ev => { if (ev.target.closest('[data-act="tapDish"]')) ev.preventDefault(); });
+
+document.addEventListener('input', ev => {
+  const f = ev.target.dataset.f; if (!f) return;
+  if (f === 'month') { S.month = ev.target.value; render(); return; }
+  if (f === 'billFilter') { S.billFilter = ev.target.value; render(); return; }
+  if (!E) return;
+  const v = ev.target.value;
+  if (f === 'text') E.text = v;
+  else if (f === 'merchant') E.merchant = v;
+  else if (f === 'date') E.date = v;
+  else if (f === 'payerId') E.payerId = v;
+  else if (f === 'method') E.method = v;
+  else if (f.startsWith('item.')) {
+    const it = E.items[+ev.target.dataset.i]; if (!it) return;
+    if (f === 'item.name') it.name = v;
+    if (f === 'item.qty') it.qty = Math.max(1, parseInt(v) || 1);
+    if (f === 'item.unit') { const p = parseMoney(v); it.unitPrice = isNaN(p) ? 0 : p; }
+    it.amount = it.qty * it.unitPrice;
+    const a = $('#amt' + ev.target.dataset.i); if (a) a.textContent = '= ' + fmt(it.amount);
+    refreshSum();
+  }
+  else if (['vat', 'service', 'discount', 'total'].includes(f)) {
+    const s = v.trim(); let n;
+    if (/%$/.test(s)) { const pct = parseFloat(s.replace(',', '.')); n = Math.round(edTotals().sub * (pct || 0) / 100); }
+    else n = parseMoney(s);
+    E[f] = isNaN(n) ? 0 : n; refreshSum();
+  }
+});
+document.addEventListener('change', ev => {
+  const f = ev.target.dataset.f;
+  // normalise the typed value in place; re-rendering here would swallow the tap on the next button
+  if (E && (f === 'vat' || f === 'service' || f === 'discount' || f === 'total')) ev.target.value = E[f] ? E[f].toLocaleString('vi-VN') : '';
+  if (E && f === 'item.unit') { const it = E.items[+ev.target.dataset.i]; if (it) ev.target.value = it.unitPrice ? it.unitPrice.toLocaleString('vi-VN') : ''; }
+  if (ev.target.id === 'billImg' && E) {
+    const file = ev.target.files[0]; if (!file) return;
+    E.imageFile = file;
+    compressImage(file, 1100, 0.8).then(u => { E.imageData = u; renderEditor(); }).catch(() => toast('Không đọc được ảnh này.'));
+  }
+  if (ev.target.id === 'mfQr') {
+    const file = ev.target.files[0]; if (!file) return;
+    compressImage(file).then(u => { sheetCtx.qr = u; $('#mfQrPrev').innerHTML = `<img src="${u}" alt="" style="max-width:160px;border-radius:8px"><br><button class="btn ghost" data-act="rmQr">Bỏ ảnh QR</button>`; }).catch(() => toast('Không đọc được ảnh này.'));
+  }
+});
+document.addEventListener('keydown', ev => {
+  if (ev.key === 'Enter' && !ev.shiftKey && ev.target.id === 'askBox') { ev.preventDefault(); const q = ev.target.value; ev.target.value = ''; askSend(q); }
+  if (ev.key === 'Escape' && $('#sheet').classList.contains('open')) closeSheet();
+});
+
+/* ---------- boot ---------- */
+async function loadAll(silent){
+  if (!API_URL || API_URL.indexOf('PASTE_') === 0 || !KEY) { render(); return; }
+  try {
+    const j = await apiGet({ action: 'all' });
+    if (flushing || OUTBOX.length) { /* đang gửi: tải sau để không mất thay đổi chưa lên máy chủ */ }
+    for (const c of ['members', 'bills', 'payments', 'checks']) S[c] = j.data[c] || [];
+    OUTBOX.forEach(applyOp);
+    S.members.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+    S.rev = j.rev; sample = j.config && j.config.ai ? makeAI() : null; imgOk = !!sample;
+    S.ready = true; S.loadErr = ''; S.needKey = false; cacheLocal();
+  } catch (e) {
+    if (e && e.error === 'unauthorized') { S.needKey = true; KEY = ''; try { localStorage.removeItem('anchung.key'); } catch {} if (!silent) toast('Sai mã nhóm.'); }
+    else if (!S.ready) S.loadErr = 'Không tải được dữ liệu. Kiểm tra mạng hoặc URL Apps Script.';
+  }
+  const editing = E && $('#overlay').classList.contains('open');
+  if (!editing) render();
+}
+// tự làm mới khi người khác thêm bill (không làm mới khi đang nhập để khỏi mất chữ)
+async function poll(){
+  if (!S.ready || document.visibilityState !== 'visible' || flushing || OUTBOX.length) return;
+  if (E || $('#sheet').classList.contains('open')) return;
+  try { const j = await apiGet({ action: 'rev' }); if (j.rev !== S.rev) loadAll(true); } catch {}
+}
+setInterval(poll, 20000);
+document.addEventListener('visibilitychange', poll);
+// v2 dùng chung service worker của app gốc (phạm vi gốc đã bao phủ thư mục /v2/)
+// mở app: hiện ngay dữ liệu lần trước (nếu có), rồi tải bản mới ở nền
+try {
+  const c = JSON.parse(localStorage.getItem('anchung.cache') || 'null');
+  if (c && c.data && KEY) { for (const k of ['members', 'bills', 'payments', 'checks']) S[k] = c.data[k] || []; S.members.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)); OUTBOX.forEach(applyOp); S.rev = c.rev || 0; sample = c.ai ? makeAI() : null; imgOk = !!sample; S.ready = true; }
+} catch {}
+render();
+loadAll();
+flush();
+</script>
+</body>
+</html>
