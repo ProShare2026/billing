@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Ăn chung · Metro</title>
+<title>Ăn chung · Metro 10</title>
 <meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -111,14 +111,23 @@ h2 .count{font-family:"Open Sans",sans-serif;font-size:12px;font-weight:600;colo
 .badge.g{background:var(--brand-soft);color:var(--brand)}
 .field{display:block;margin:10px 0}
 .field > span{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
-input.in,select.in,textarea.in{width:100%;border:2px solid #555;background:#000;padding:9px 10px;font-size:16px;color:#FFF}
-input.in:focus,select.in:focus,textarea.in:focus{border-color:var(--brand);outline:0;background:#FFF;color:#000}
+input.in,select.in,textarea.in{display:block;width:100%;min-width:0;max-width:100%;border:2px solid #555;background:#000;padding:0 10px;font-size:16px;color:#FFF;-webkit-appearance:none;appearance:none}
+input.in,select.in{height:46px;line-height:42px}
+textarea.in{padding:9px 10px;line-height:1.45}
+input[type=date].in{text-align:left}
+input[type=date].in::-webkit-date-and-time-value{text-align:left;margin:0}
+input[type=date].in::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.7}
+select.in{padding-right:30px;background-image:linear-gradient(45deg,transparent 50%,#AAA 50%),linear-gradient(135deg,#AAA 50%,transparent 50%);background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;background-size:5px 5px;background-repeat:no-repeat}
+.grid2 > *,.field{min-width:0}
+input.in:focus,textarea.in:focus{border-color:var(--brand);outline:0;background:#FFF;color:#000}
+select.in:focus{border-color:var(--brand);outline:0}
+input[type=date].in:focus::-webkit-calendar-picker-indicator{filter:none}
 textarea.in{min-height:96px;resize:vertical}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .note{font-size:12.5px;padding:10px 12px;background:#1A1A1A;border-left:4px solid var(--sun);margin:10px 0}
 .card{background:var(--surface);padding:6px 14px}
 /* editor */
-#overlay{position:fixed;inset:0;z-index:20;background:#000;overflow:auto;display:none;padding-top:env(safe-area-inset-top,0px)}
+#overlay{position:fixed;inset:0 0 calc(56px + env(safe-area-inset-bottom,0px)) 0;z-index:20;background:#000;overflow:auto;display:none;padding-top:env(safe-area-inset-top,0px)}
 #overlay.open{display:block}
 .ov-head{position:sticky;top:0;z-index:2;background:#000;display:flex;align-items:center;gap:8px;padding:8px 12px;max-width:480px;margin:0 auto}
 .ov-head .ttl{flex:1;font-size:28px;text-align:left}
@@ -183,6 +192,49 @@ textarea.in{min-height:96px;resize:vertical}
 .chip{border:1px solid #555;background:none;padding:7px 12px;font-size:13px;color:#FFF;text-transform:lowercase}
 .composer{position:sticky;bottom:calc(66px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;background:#000;padding:8px 0}
 .composer textarea{flex:1;min-height:46px;max-height:120px}
+/* ===== Start screen kiểu Windows 10 Mobile ===== */
+body{background:#06122B}
+body::after{content:"";position:fixed;inset:0;z-index:-1;background:
+  radial-gradient(120% 70% at 85% 10%,rgba(40,110,255,.55),transparent 60%),
+  radial-gradient(90% 60% at 10% 60%,rgba(20,70,200,.45),transparent 65%),
+  radial-gradient(80% 50% at 70% 95%,rgba(70,40,190,.4),transparent 60%),
+  linear-gradient(180deg,#081A42,#050C22)}
+header.top,nav.pivot{background:transparent}
+nav.pivot{background:linear-gradient(#06122B 70%,rgba(6,18,43,0))}
+body::before{background:#06122B}
+nav.pivot button{font-size:30px}
+.start{--gap:6px;--cell:calc((min(100vw,480px) - 32px - 3 * var(--gap)) / 4);display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:var(--cell);gap:var(--gap);margin:2px 0 14px}
+.tl{--tc:#1B5FD1;position:relative;overflow:hidden;border:0;padding:0;color:#FFF;text-align:left;background:color-mix(in srgb,var(--tc) 62%,transparent);display:block;width:100%;height:100%}
+.tl:active{transform:scale(.97);transition:transform .08s}
+.tl.s{grid-column:span 1;grid-row:span 1}
+.tl.m{grid-column:span 2;grid-row:span 2}
+.tl.w{grid-column:span 4;grid-row:span 2}
+.cluster{grid-column:span 2;grid-row:span 2;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:var(--gap)}
+.tl .ic{position:absolute;inset:0;display:grid;place-items:center}
+.tl .ic svg{width:38%;height:38%;stroke:#FFF;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tl.s .ic svg{width:46%;height:46%}
+.tl .nm{position:absolute;left:10px;bottom:7px;right:10px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tl .bd{position:absolute;right:8px;top:7px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:rgba(0,0,0,.3);padding:1px 6px}
+.tl .big{position:absolute;left:12px;right:12px;top:50%;transform:translateY(-58%);font-family:var(--light);font-weight:300;font-size:clamp(20px,7vw,30px);letter-spacing:-.4px;line-height:1.05}
+.tl.w .big{font-size:clamp(30px,10vw,42px)}
+.tl .sub{position:absolute;left:12px;top:10px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.95}
+.tl .ini{position:absolute;left:12px;top:10px;font-family:var(--light);font-size:22px;font-weight:300;opacity:.9}
+.tl .cnt{position:absolute;right:10px;bottom:7px;font-family:var(--light);font-size:26px;font-weight:300;line-height:1}
+.tl.green{--tc:#119E2B}.tl.red{--tc:#D0222B}.tl.gray{--tc:#3A4660}.tl.orange{--tc:#F7630C}.tl.magenta{--tc:#C3006B}.tl.teal{--tc:#00A2A6}
+.focus-chip{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#FFF;font-size:12px;padding:5px 10px;border:0;margin:4px 0 0}
+.list .row{background:rgba(0,0,0,.5)}
+.empty{background:rgba(0,0,0,.45)}
+.seg button{background:rgba(0,0,0,.45)}
+.card{background:rgba(0,0,0,.5)}
+/* thanh điều hướng kiểu Windows 10 Mobile */
+.appbar{background:#000;border-top:0;z-index:25}
+.appbar .in{height:56px;justify-content:space-around;padding:0}
+.nb{background:none;border:0;color:#FFF;width:25%;height:100%;display:grid;place-items:center}
+.nb svg{width:24px;height:24px;stroke:#FFF;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.nb:active{background:#1F1F1F}
+.composer{bottom:calc(58px + env(safe-area-inset-bottom,0px));background:transparent}
+.wrap{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+#toast{background:#0063B1}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
@@ -201,12 +253,10 @@ textarea.in{min-height:96px;resize:vertical}
 <main class="wrap" id="view"></main>
 
 <footer class="appbar"><div class="in">
-  <div class="acts">
-    <button class="ab" data-act="newBill"><span class="c"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span><span class="l">thêm bill</span></button>
-    <button class="ab" data-act="newBillPhoto"><span class="c"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span><span class="l">chụp bill</span></button>
-    <button class="ab" data-act="reload"><span class="c"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7L20 8"/><path d="M20 3v5h-5"/></svg></span><span class="l">làm mới</span></button>
-  </div>
-  <button class="ab-more" data-act="moreMenu" aria-label="Thêm tuỳ chọn">···</button>
+  <button class="nb" data-act="back" aria-label="Quay lại"><svg viewBox="0 0 24 24"><path d="M20 12H4M10 6l-6 6 6 6"/></svg></button>
+  <button class="nb" data-act="tab" data-tab="home" aria-label="Màn hình chính"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" fill="#FFF" stroke="none"/></svg></button>
+  <button class="nb" data-act="newBill" aria-label="Thêm bill"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16"/><path d="M12 8v8M8 12h8"/></svg></button>
+  <button class="nb" data-act="moreMenu" aria-label="Tuỳ chọn"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.3" fill="#FFF"/><circle cx="12" cy="12" r="1.3" fill="#FFF"/><circle cx="18" cy="12" r="1.3" fill="#FFF"/></svg></button>
 </div></footer>
 
 <div id="overlay" role="dialog" aria-modal="true"></div>
@@ -443,8 +493,9 @@ function viewHome(){
     const debts = billDebts().filter(d => d.remaining > 0).sort((a, b) => b.date.localeCompare(a.date) || b.created - a.created);
     const pay = debts.filter(d => d.from === S.me), get = debts.filter(d => d.to === S.me);
     sumPay = pay.reduce((s, d) => s + d.remaining, 0); sumGet = get.reduce((s, d) => s + d.remaining, 0); nPay = pay.length; nGet = get.length;
-    payHtml = pay.map(d => billDebtRow(d, 'pay')).join(''); getHtml = get.map(d => billDebtRow(d, 'get')).join('');
-    note = 'Mỗi bill trả riêng cho người đã trả bill đó.';
+    const fp = S.focus ? pay.filter(d => d.to === S.focus) : pay, fg = S.focus ? get.filter(d => d.from === S.focus) : get;
+    payHtml = fp.map(d => billDebtRow(d, 'pay')).join(''); getHtml = fg.map(d => billDebtRow(d, 'get')).join('');
+    note = 'Mỗi bill trả riêng cho người đã trả bill đó.' + (S.focus ? `<br><button class="focus-chip" data-act="clearFocus">đang xem riêng ${esc(mName(S.focus))} ✕</button>` : '');
   } else if (S.homeMode === 'pair') {
     const L = ledger();
     const rows = S.members.filter(m => m.id !== S.me).map(m => ({ id: m.id, v: Math.round(L.owe(S.me, m.id)) }));
@@ -462,18 +513,45 @@ function viewHome(){
     note = 'Gộp tất toán: tự cấn trừ chéo giữa tất cả mọi người, ai âm ròng trả thẳng cho ai dương ròng để số lần chuyển ít nhất.';
   }
   const net = sumGet - sumPay;
-  const tiles = `<div class="tiles">
-    <div class="tile tile-top ${net > 0 ? 't-green' : net < 0 ? 't-red' : 't-gray'}">
-      <div class="tile-head"><span class="tile-label">SỐ DƯ CỦA BẠN</span><span class="live" id="liveBadge">${liveText()}</span></div>
-      <div><div class="tile-amount">${net > 0 ? '+' : net < 0 ? '−' : ''}${fmt(Math.abs(net))}</div><span class="tile-sub">${net > 0 ? 'mọi người đang nợ bạn' : net < 0 ? 'bạn đang nợ' : 'không ai nợ ai'}</span></div>
+  // gom theo người để làm ô
+  const per = {};
+  const addP = (id, k, v) => { per[id] = per[id] || { pay: 0, get: 0 }; per[id][k] += v; };
+  if (S.homeMode === 'bill') { billDebts().filter(d => d.remaining > 0).forEach(d => { if (d.from === S.me) addP(d.to, 'pay', d.remaining); else if (d.to === S.me) addP(d.from, 'get', d.remaining); }); }
+  else { (S.homeMode === 'pair' ? (() => { const L = ledger(); return S.members.filter(m => m.id !== S.me).map(m => { const v = Math.round(L.owe(S.me, m.id)); return v > 0 ? { from: S.me, to: m.id, amount: v } : v < 0 ? { from: m.id, to: S.me, amount: -v } : null; }).filter(Boolean); })() : simplify(ledger().net)).forEach(d => { if (d.from === S.me) addP(d.to, 'pay', d.amount); else if (d.to === S.me) addP(d.from, 'get', d.amount); }); }
+  const people = Object.entries(per).map(([id, v]) => ({ id, v: v.get - v.pay })).filter(x => x.v).sort((a, b) => Math.abs(b.v) - Math.abs(a.v)).slice(0, 8);
+  const draftsN = S.bills.filter(b => b.draft).length;
+  const IC = {
+    plus: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+    cam: '<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+    sync: '<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7L20 8"/><path d="M20 3v5h-5"/></svg>',
+    card: '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13"/><path d="M3 10h18M7 15h4"/></svg>',
+    bill: '<svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>',
+    people: '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><circle cx="17.5" cy="9" r="2.5"/><path d="M17 14.5c2.5 0 4 1.6 4.6 4"/></svg>',
+    chat: '<svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>',
+    down: '<svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>',
+    hour: '<svg viewBox="0 0 24 24"><path d="M7 3h10M7 21h10M8 3c0 5 8 6 8 9s-8 4-8 9M16 3c0 5-8 6-8 9"/></svg>'
+  };
+  const myBank = mById(S.me) && (mById(S.me).account || mById(S.me).qr);
+  const tiles = `<div class="start">
+    <div class="tl w ${net > 0 ? 'green' : net < 0 ? 'red' : 'gray'}"><span class="sub">số dư của bạn</span><span class="bd" id="liveBadge">${liveText()}</span><span class="big">${net > 0 ? '+' : net < 0 ? '−' : ''}${fmt(Math.abs(net))}</span><span class="nm">${net > 0 ? 'mọi người đang nợ bạn' : net < 0 ? 'bạn đang nợ' : 'không ai nợ ai'}</span></div>
+    <div class="cluster">
+      <button class="tl s" data-act="newBill" aria-label="Thêm bill"><span class="ic">${IC.plus}</span></button>
+      <button class="tl s" data-act="newBillPhoto" aria-label="Chụp bill"><span class="ic">${IC.cam}</span></button>
+      <button class="tl s" data-act="reload" aria-label="Làm mới"><span class="ic">${IC.sync}</span></button>
+      <button class="tl s" data-act="${S.me ? 'editMember' : 'pickMe'}" data-id="${S.me || ''}" aria-label="Số tài khoản của tôi"><span class="ic">${IC.card}</span></button>
     </div>
-    <div class="tiles-pair">
-      <button class="tile t-cyan" data-act="scrollTo" data-target="secGet"><span class="tile-sym">$</span><span><span class="tile-small-amount">${fmt(sumGet)}</span><span class="tile-sub">cần trả bạn · ${nGet} khoản</span></span></button>
-      <button class="tile t-magenta" data-act="scrollTo" data-target="secPay"><span class="tile-sym">→</span><span><span class="tile-small-amount">${fmt(sumPay)}</span><span class="tile-sub">bạn cần trả · ${nPay} khoản</span></span></button>
-    </div>
-  </div>`;
+    ${draftsN ? `<button class="tl m orange" data-act="scrollTo" data-target="secDraft"><span class="ic">${IC.hour}</span><span class="cnt">${draftsN}</span><span class="nm">chờ chia</span></button>`
+              : `<button class="tl m" data-act="tab" data-tab="bills"><span class="ic">${IC.bill}</span><span class="nm">lịch sử bill</span></button>`}
+    <button class="tl m teal" data-act="scrollTo" data-target="secGet"><span class="sub">cần trả bạn</span><span class="big">${fmt(sumGet)}</span><span class="nm">${nGet} khoản</span></button>
+    <button class="tl m magenta" data-act="scrollTo" data-target="secPay"><span class="sub">bạn cần trả</span><span class="big">${fmt(sumPay)}</span><span class="nm">${nPay} khoản</span></button>
+    ${people.map(p => `<button class="tl m" style="--tc:${mColor(p.id)}" data-act="personTile" data-id="${p.id}" data-v="${p.v}"><span class="ini">${esc(initials(mName(p.id)))}</span><span class="bd">${p.v > 0 ? 'nợ bạn' : 'bạn nợ'}</span><span class="big">${p.v > 0 ? '+' : '−'}${fmt(Math.abs(p.v))}</span><span class="nm">${esc(mName(p.id))}</span></button>`).join('')}
+    <button class="tl s" data-act="tab" data-tab="members" aria-label="Nhóm"><span class="ic">${IC.people}</span></button>
+    <button class="tl s" data-act="tab" data-tab="ask" aria-label="Trợ lý AI"><span class="ic">${IC.chat}</span></button>
+    <button class="tl s" data-act="tab" data-tab="bills" aria-label="Lịch sử bill"><span class="ic">${IC.bill}</span></button>
+    <button class="tl s" data-act="exportCSV" aria-label="Xuất CSV"><span class="ic">${IC.down}</span></button>
+  </div>${!myBank && S.me ? '<p class="small muted" style="margin:-6px 0 10px">Ô thẻ ngân hàng: thêm số tài khoản để mọi người trả bạn nhanh hơn.</p>' : ''}`;
   const drafts = S.bills.filter(b => b.draft).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-  let body = drafts.length ? `<h2>bill chờ chia<span class="count">${drafts.length} bill</span></h2><div class="list">${drafts.map(b => { const c = computeBill({ ...b, draft: false }); return `<button class="row" style="border-left-color:var(--sun)" data-act="${canEditBill(b) ? 'splitDraft' : 'openBill'}" data-id="${b.id}">${av(b.payerId)}<span class="grow"><span class="t">${esc(b.merchant || 'Bữa ăn')}</span><span class="s">${fmtDate(b.date)} · ${esc(mName(b.payerId))} trả</span></span><span class="amt-wrap"><span class="amt">${fmt(c.total)}</span><span class="pill" style="background:var(--sun-soft);color:#FFD27A">${canEditBill(b) ? 'chia ngay' : 'chờ ' + esc(mName(b.payerId))}</span></span></button>`; }).join('')}</div>` : '';
+  let body = drafts.length ? `<h2 id="secDraft">bill chờ chia<span class="count">${drafts.length} bill</span></h2><div class="list">${drafts.map(b => { const c = computeBill({ ...b, draft: false }); return `<button class="row" style="border-left-color:var(--sun)" data-act="${canEditBill(b) ? 'splitDraft' : 'openBill'}" data-id="${b.id}">${av(b.payerId)}<span class="grow"><span class="t">${esc(b.merchant || 'Bữa ăn')}</span><span class="s">${fmtDate(b.date)} · ${esc(mName(b.payerId))} trả</span></span><span class="amt-wrap"><span class="amt">${fmt(c.total)}</span><span class="pill" style="background:var(--sun-soft);color:#FFD27A">${canEditBill(b) ? 'chia ngay' : 'chờ ' + esc(mName(b.payerId))}</span></span></button>`; }).join('')}</div>` : '';
   body += seg + `<p class="muted small" style="margin:6px 0 0">${note}</p>`;
   body += `<h2 id="secPay">bạn cần trả<span class="count">${nPay} khoản</span></h2>` + (nPay ? `<div class="list">${payHtml}</div>` : `<div class="empty">Bạn không cần trả ai.</div>`);
   body += `<h2 id="secGet">cần trả bạn<span class="count">${nGet} khoản</span></h2>` + (nGet ? `<div class="list">${getHtml}</div>` : `<div class="empty">Chưa ai nợ bạn.</div>`);
@@ -935,7 +1013,7 @@ document.addEventListener('click', async ev => {
     case 'tab': S.tab = t.dataset.tab; render(); window.scrollTo(0, 0); break;
     case 'saveKey': { const k = ($('#keyBox').value || '').trim(); if (!k) break; KEY = k; try { localStorage.setItem('anchung.key', k); localStorage.removeItem('anchung.cache'); } catch {} S.needKey = false; S.ready = false; render(); loadAll(); break; }
     case 'reload': S.loadErr = ''; toast('Đang làm mới…'); render(); loadAll(); break;
-    case 'homeMode': S.homeMode = t.dataset.v; try { localStorage.setItem('anchung.mode', S.homeMode); } catch {} render(); break;
+    case 'homeMode': S.focus = null; S.homeMode = t.dataset.v; try { localStorage.setItem('anchung.mode', S.homeMode); } catch {} render(); break;
     case 'openBillDebt': openBillDebt(t.dataset.bill, t.dataset.from, t.dataset.to); break;
     case 'pickMe': openPickMe(); break;
     case 'pickLogin': if (id === S.me && S.token) { closeSheet(); break; } openLogin(id); break;
@@ -1004,6 +1082,19 @@ document.addEventListener('click', async ev => {
     }
     case 'newBill': if (needLogin()) break; openEditor(null); break;
     case 'newBillPhoto': if (needLogin()) break; openEditor(null); E.mode = 'photo'; renderEditor(); setTimeout(() => $('#billImg')?.click(), 0); break;
+    case 'personTile': {
+      const v = +t.dataset.v;
+      if (S.homeMode === 'bill') { S.focus = id; render(); setTimeout(() => document.getElementById(v > 0 ? 'secGet' : 'secPay')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30); }
+      else openPerson(id, v > 0 ? 'get' : 'pay', Math.abs(v));
+      break;
+    }
+    case 'clearFocus': S.focus = null; render(); break;
+    case 'back':
+      if ($('#sheet').classList.contains('open')) { closeSheet(); if (E) renderEditor(); }
+      else if (E && $('#overlay').classList.contains('open')) { if (E.step === 'split') { E.step = 'input'; renderEditor(); } else if (!E.items.length || confirm('Bỏ bill đang nhập?')) closeEditor(); }
+      else if (S.focus) { S.focus = null; render(); }
+      else if (S.tab !== 'home') { S.tab = 'home'; render(); window.scrollTo(0, 0); }
+      break;
     case 'scrollTo': document.getElementById(t.dataset.target)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); break;
     case 'moreMenu': openSheet(`<h3>tuỳ chọn</h3><div class="list">
       <button class="row" data-act="pickMe"><span class="grow"><span class="t">đổi tài khoản</span><span class="s">${S.me ? 'đang dùng: ' + esc(mName(S.me)) : 'chưa đăng nhập'}</span></span></button>
