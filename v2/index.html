@@ -82,7 +82,7 @@ h2 .count{font-family:"Open Sans",sans-serif;font-size:12px;font-weight:600;colo
 .seg button.on{background:#1F1F1F;border:1.5px solid var(--brand);color:#FFF;font-weight:600}
 /* lists */
 .list{display:flex;flex-direction:column;gap:2px}
-.row{display:flex;align-items:center;gap:12px;padding:12px 14px;width:100%;background:var(--surface);border:0;border-left:4px solid transparent;text-align:left;position:relative;color:var(--ink)}
+.row{display:flex;align-items:center;gap:12px;padding:12px 14px;width:100%;background:var(--surface);border:0;border-left:4px solid transparent;text-align:left;position:relative;color:var(--ink); touch-action: pan-y;}
 .row:active{background:#1C1C1C}
 .row.owe{border-left-color:var(--owe)} .row.owed{border-left-color:var(--owed)}
 .row .grow{flex:1;min-width:0}
@@ -849,7 +849,7 @@ function edInput(){
   <label class="field"><span>Tổng trên bill (nếu khác)</span><input class="in" data-f="total" value="${E.total ? E.total.toLocaleString('vi-VN') : ''}" placeholder="Để trống = tự tính"></label></div>
   <div class="list totals" id="edSum">${sumHtml(c, diff)}</div>
   <button class="btn full" style="margin-top:16px" data-act="toSplit">Tiếp: chia món</button>
-  <button class="btn sec full" style="margin-top:8px" data-act="saveDraft">Lưu nháp, chia sau</button>
+  ${E.id ? `<div class="btns" style="margin-top:8px"><button class="btn sec" data-act="saveDraft">Lưu nháp</button><button class="btn red" data-act="delDraftInEd">Xoá bill</button></div>` : `<button class="btn sec full" style="margin-top:8px" data-act="saveDraft">Lưu nháp, chia sau</button>`}
   <p class="small muted" style="text-align:center;margin:6px 0 0">Vội thì chỉ cần nhập người trả và tổng tiền. Bill nháp chưa tính nợ cho ai.</p>`;
 }
 function sumHtml(c, diff){
@@ -1063,6 +1063,7 @@ document.addEventListener('click', async ev => {
     case 'exportCSV': exportCSV(); break;
     case 'editBill': { const b = S.bills.find(x => x.id === id); if (b && !canEditBill(b)) { toast('Bạn không có quyền sửa bill này.'); break; } closeSheet(); openEditor(b); break; }
     case 'delBill': if (confirm('Xoá bill này? Các khoản nợ từ bill sẽ mất theo.')) { if (await safe(store.del('bills', id), 'Đã xoá bill')) closeSheet(); } break;
+    case 'delDraftInEd': if (confirm('Xoá bill nháp này? Các khoản nợ từ bill sẽ mất theo.')) { if (await safe(store.del('bills', E.id), 'Đã xoá bill')) { closeEditor(); S.tab = 'home'; render(); } } break;
     case 'editMember': { const m = id && mById(id); if (m && !canEditMember(m)) { openMemberView(id); break; } openMemberForm(id); break; }
     case 'rmQr': sheetCtx.qr = ''; $('#mfQrPrev').innerHTML = ''; break;
     case 'saveMember': {
@@ -1214,6 +1215,73 @@ document.addEventListener('change', ev => {
 document.addEventListener('keydown', ev => {
   if (ev.key === 'Enter' && !ev.shiftKey && ev.target.id === 'askBox') { ev.preventDefault(); const q = ev.target.value; ev.target.value = ''; askSend(q); }
   if (ev.key === 'Escape' && $('#sheet').classList.contains('open')) closeSheet();
+});
+
+/* ---------- Swipe to Delete (Vuốt để xoá) ---------- */
+let swpX = 0, swpY = 0, swpEl = null, swpCur = 0;
+document.addEventListener('touchstart', e => {
+  const t = e.target.closest('.row[data-id]');
+  if (!t) return;
+  const act = t.dataset.act;
+  // Chỉ cho phép vuốt xoá đối với các dòng bill hoặc bill nháp
+  if (act !== 'openBill' && act !== 'splitDraft') return;
+  
+  swpEl = t;
+  swpX = e.touches[0].clientX;
+  swpY = e.touches[0].clientY;
+  swpCur = 0;
+  swpEl.style.transition = 'none';
+}, { passive: true });
+
+document.addEventListener('touchmove', e => {
+  if (!swpEl) return;
+  const dx = e.touches[0].clientX - swpX;
+  const dy = e.touches[0].clientY - swpY;
+  
+  // Huỷ thao tác vuốt nếu người dùng đang cuộn dọc
+  if (Math.abs(dy) > Math.abs(dx) && swpCur === 0) { 
+    swpEl.style.transform = ''; swpEl = null; return; 
+  } 
+  
+  // Vuốt sang phải
+  if (dx > 0) { 
+    swpCur = dx;
+    swpEl.style.transform = `translateX(${Math.min(dx, 100)}px)`;
+    
+    // Hiệu ứng màu báo hiệu sắp thực hiện hành động xoá khi kéo đủ xa
+    if (dx > 70) {
+      swpEl.style.borderLeftColor = 'var(--t-red)';
+      swpEl.style.opacity = '0.6';
+    } else {
+      swpEl.style.borderLeftColor = '';
+      swpEl.style.opacity = '1';
+    }
+  }
+}, { passive: true });
+
+document.addEventListener('touchend', async e => {
+  if (!swpEl) return;
+  const el = swpEl;
+  swpEl = null;
+  el.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
+  
+  // Nếu vuốt thả trên 70px thì kích hoạt xoá
+  if (swpCur > 70) {
+    const id = el.dataset.id;
+    const b = S.bills.find(x => x.id === id);
+    if (b && canEditBill(b)) {
+      if (confirm(`Bạn có chắc chắn muốn xoá bill ${b.draft ? 'nháp ' : ''}này?`)) {
+        await safe(store.del('bills', id), 'Đã xoá bill');
+      }
+    } else {
+      toast('Bạn không có quyền xoá bill này.');
+    }
+  }
+  
+  // Trả item về vị trí cũ
+  el.style.transform = '';
+  el.style.borderLeftColor = '';
+  el.style.opacity = '1';
 });
 
 /* ---------- boot ---------- */
