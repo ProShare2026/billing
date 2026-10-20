@@ -82,7 +82,8 @@ h2 .count{font-family:"Open Sans",sans-serif;font-size:12px;font-weight:600;colo
 .seg button.on{background:#1F1F1F;border:1.5px solid var(--brand);color:#FFF;font-weight:600}
 /* lists */
 .list{display:flex;flex-direction:column;gap:2px}
-.row{display:flex;align-items:center;gap:12px;padding:12px 14px;width:100%;background:var(--surface);border:0;border-left:4px solid transparent;text-align:left;position:relative;color:var(--ink); touch-action: pan-y;}
+.row-wrapper{position:relative;overflow:hidden;width:100%;margin-bottom:2px;}
+.row{display:flex;align-items:center;gap:12px;padding:12px 14px;width:100%;background:var(--surface);border:0;border-left:4px solid transparent;text-align:left;position:relative;color:var(--ink); touch-action: pan-y;z-index:2;transition:transform 0.2s ease;}
 .row:active{background:#1C1C1C}
 .row.owe{border-left-color:var(--owe)} .row.owed{border-left-color:var(--owed)}
 .row .grow{flex:1;min-width:0}
@@ -94,6 +95,24 @@ h2 .count{font-family:"Open Sans",sans-serif;font-size:12px;font-weight:600;colo
 .pill{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 5px;background:#222;color:#CCC}
 .pill.owe{background:var(--owe-soft);color:#FFA4A8} .pill.owed{background:var(--owed-soft);color:#72E396}
 .empty{padding:18px 14px;color:var(--muted);background:var(--surface);font-size:13px}
+
+/* Vùng xóa follow-up ẩn phía sau hàng dữ liệu */
+.row-actions {
+  position: absolute;
+  top: 0; bottom: 0; right: 0;
+  width: 110px;
+  background: var(--t-red);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFF;
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  z-index: 1;
+  letter-spacing: 0.05em;
+}
+
 /* avatars: ô vuông màu đặc */
 .av{--c:#555;flex:none;display:inline-grid;place-items:center;width:38px;height:38px;background:var(--c);color:#FFF;font-weight:600;font-size:15px;line-height:1}
 .av.s{width:22px;height:22px;font-size:10px}
@@ -294,7 +313,6 @@ function parseMoney(v){
 }
 
 /* ---------- cấu hình ---------- */
-// Dán URL web app của Apps Script (kết thúc bằng /exec) vào đây:
 const API_URL = 'https://script.google.com/macros/s/AKfycbxThLDlBVw22mg443fYYiMNfr3_0b6jeGHg3iD6yKbHhGIQYIeGDlObBuSwlNlVZYeo/exec';
 
 /* ---------- API (Apps Script) ---------- */
@@ -327,8 +345,6 @@ function makeAI(){
 const S = { members: [], bills: [], payments: [], checks: [], me: null, tab: 'home', homeMode: 'bill', month: 'all', billFilter: 'all', chat: [], ready: false, rev: 0, saving: false, needKey: false, loadErr: '' };
 let sample = null, imgOk = false, dbWritable = true;
 try { const ss = JSON.parse(localStorage.getItem('anchung.session') || 'null'); if (ss && ss.memberId && ss.token) { S.me = ss.memberId; S.token = ss.token; } localStorage.removeItem('anchung.me'); const hm = localStorage.getItem('anchung.mode'); if (hm === 'bill' || hm === 'pair' || hm === 'net') S.homeMode = hm; } catch {}
-/* Lưu kiểu "lạc quan": cập nhật màn hình ngay, gửi lên Apps Script ở nền theo hàng đợi.
-   Mất mạng thì hàng đợi được giữ trên máy và tự gửi lại khi có mạng. */
 let OUTBOX = []; try { OUTBOX = JSON.parse(localStorage.getItem('anchung.outbox') || '[]'); } catch {}
 const saveOutbox = () => { try { localStorage.setItem('anchung.outbox', JSON.stringify(OUTBOX)); } catch {} };
 function applyOp(op){
@@ -355,12 +371,12 @@ async function flush(){
         if (err === 'need_login') { flushing = false; logout(true); toast('Phiên đăng nhập hết hạn. Chọn lại tên và nhập PIN.'); openPickMe(); return; }
         if (err === 'forbidden') { OUTBOX.shift(); saveOutbox(); toast(e.reason || 'Bạn không có quyền sửa mục này.'); loadAll(true); continue; }
         if (err) { OUTBOX.shift(); saveOutbox(); toast(err === 'too_large' ? 'Dữ liệu quá lớn, chưa lưu được.' : 'Máy chủ từ chối một thay đổi, đã tải lại dữ liệu.'); loadAll(true); continue; }
-        throw e; // lỗi mạng: giữ lại, thử sau
+        throw e;
       }
       OUTBOX.shift(); saveOutbox();
       if (op.action === 'set' && j.data) { const i = S[op.col].findIndex(x => x.id === op.id); if (i >= 0) S[op.col][i] = { id: op.id, ...j.data }; }
       S.rev = j.rev;
-      if (j.rev !== prev + 1 && prev) S.stale = true; // có người khác vừa ghi
+      if (j.rev !== prev + 1 && prev) S.stale = true;
     }
     flushing = false; syncBadge(); cacheLocal();
     if (S.stale) { S.stale = false; loadAll(true); } else if (!E) render();
@@ -382,7 +398,6 @@ async function safe(p, okMsg){
   try { await p; if (okMsg) toast(okMsg); return true; } catch { toast('Chưa lưu được.'); return false; }
 }
 const mById = id => S.members.find(m => m.id === id);
-/* ---------- quyền (giao diện chỉ ẩn nút; backend mới là nơi kiểm tra thật) ---------- */
 const billOwner = b => b.createdBy || b.payerId;
 const canEditBill = b => !!S.me && (S.me === billOwner(b) || S.me === b.payerId);
 const canEditMember = m => !!S.me && S.me === m.id;
@@ -394,7 +409,6 @@ const mName = id => mById(id)?.name || 'Người đã xoá';
 const mColor = id => mById(id)?.color || '#888';
 function av(id, cls=''){ return `<span class="av ${cls}" style="--c:${mColor(id)}" aria-hidden="true">${esc(initials(mName(id)))}</span>`; }
 
-/* ---------- money logic ---------- */
 function computeBill(b){
   const items = b.items || [];
   const sub = items.reduce((s, it) => s + (+it.amount || 0), 0);
@@ -422,7 +436,7 @@ function ledger(){
     for (const [mid, amt] of Object.entries(c.owes)){ add(mid, b.payerId, amt); net[mid] = (net[mid] || 0) - amt; net[b.payerId] = (net[b.payerId] || 0) + amt; }
   }
   for (const p of S.payments){ add(p.to, p.from, +p.amount); net[p.from] = (net[p.from] || 0) + (+p.amount); net[p.to] = (net[p.to] || 0) - (+p.amount); }
-  const owe = (a, b) => ((D[a] || {})[b] || 0) - ((D[b] || {})[a] || 0); // >0: a owes b
+  const owe = (a, b) => ((D[a] || {})[b] || 0) - ((D[b] || {})[a] || 0);
   return { net, owe, D };
 }
 function simplify(net){
@@ -439,8 +453,6 @@ function simplify(net){
   return out;
 }
 
-/* per-bill debts: linked payments pay their own bill; other payments between two people
-   (and the offset recorded when two people settle "gộp") are applied oldest bill first */
 function billDebts(){
   const debts = [];
   for (const b of S.bills){ if (b.draft) continue; const c = computeBill(b); for (const [d, o] of Object.entries(c.owes)) debts.push({ billId: b.id, bill: b, from: d, to: b.payerId, owe: o, paid: 0, remaining: o, date: b.date || '', created: b.createdAt || 0 }); }
@@ -459,7 +471,6 @@ function billDebts(){
   return debts;
 }
 
-/* ---------- render ---------- */
 function render(){
   document.querySelectorAll('nav.pivot [data-tab]').forEach(b => { const on = b.dataset.tab === S.tab; b.classList.toggle('on', on); if (on) b.scrollIntoView({ inline: 'center', block: 'nearest' }); });
   const me = mById(S.me);
@@ -475,9 +486,17 @@ function render(){
   else if (S.tab === 'ask') { v.innerHTML = viewAsk(); const c = $('#chatEnd'); if (c) c.scrollIntoView({ block: 'end' }); }
   if (E && $('#overlay').classList.contains('open')) renderEditor();
 }
-function localBanner(){ return ''; }
 
 function liveText(){ return navigator.onLine === false ? 'ngoại tuyến' : OUTBOX.length ? 'đang gửi ' + OUTBOX.length : 'đã đồng bộ'; }
+
+// Hàm hỗ trợ tạo cấu trúc HTML bọc list row để hỗ trợ vuốt trái hiển thị vùng xóa
+function wrapRow(rowHtml, id, isDraft) {
+  return `<div class="row-wrapper" data-id="${id}" data-draft="${isDraft ? '1' : '0'}">
+    <div class="row-actions">Xóa</div>
+    ${rowHtml}
+  </div>`;
+}
+
 function viewHome(){
   if (!S.members.length) return `<div class="tile tile-top t-accent"><div class="tile-label">BẮT ĐẦU</div><div><div class="tile-amount">chào team</div><span class="tile-sub">thêm những người hay đi ăn cùng nhau, rồi ghi bill đầu tiên</span></div></div><button class="btn full" style="margin-top:10px" data-act="tab" data-tab="members">thêm thành viên</button>`;
   if (!mById(S.me)) return `<h2>bạn là ai trong nhóm?</h2><p class="muted small" style="margin:0 0 10px">Chọn tên của bạn rồi nhập PIN (lần đầu thì tạo PIN).</p><div class="list">${S.members.map(m => `<button class="row" data-act="pickLogin" data-id="${m.id}">${av(m.id)}<span class="grow"><span class="t">${esc(m.name)}</span><span class="s">${m.hasPin ? 'đã có PIN' : 'chưa có PIN'}</span></span></button>`).join('')}</div>`;
@@ -513,11 +532,10 @@ function viewHome(){
     note = 'Gộp tất toán: tự cấn trừ chéo giữa tất cả mọi người, ai âm ròng trả thẳng cho ai dương ròng để số lần chuyển ít nhất.';
   }
   const net = sumGet - sumPay;
-  // gom theo người để làm ô
   const per = {};
   const addP = (id, k, v) => { per[id] = per[id] || { pay: 0, get: 0 }; per[id][k] += v; };
   if (S.homeMode === 'bill') { billDebts().filter(d => d.remaining > 0).forEach(d => { if (d.from === S.me) addP(d.to, 'pay', d.remaining); else if (d.to === S.me) addP(d.from, 'get', d.remaining); }); }
-  else { (S.homeMode === 'pair' ? (() => { const L = ledger(); return S.members.filter(m => m.id !== S.me).map(m => { const v = Math.round(L.owe(S.me, m.id)); return v > 0 ? { from: S.me, to: m.id, amount: v } : v < 0 ? { from: m.id, to: S.me, amount: -v } : null; }).filter(Boolean); })() : simplify(ledger().net)).forEach(d => { if (d.from === S.me) addP(d.to, 'pay', d.amount); else if (d.to === S.me) addP(d.from, 'get', d.amount); }); }
+  else { (S.homeMode === 'pair' ? (() => { const L = ledger(); return S.members.filter(m => m.id !== S.me).map(m => { const v = Math.round(L.owe(S.me, m.id)); return v > 0 ? { from: S.me, to: m.id, amount: v } : v < 0 ? { from: m.id, to: S.me, amount: -v } : null; }).filter(Boolean); })() : simplify(ledger().net)).forEach(d => { if (d.from === S.me) addP(d.to, 'pay', d.amount); else if (d.to === S.me) addP(d.to, 'get', d.amount); }); }
   const people = Object.entries(per).map(([id, v]) => ({ id, v: v.get - v.pay })).filter(x => x.v).sort((a, b) => Math.abs(b.v) - Math.abs(a.v)).slice(0, 8);
   const draftsN = S.bills.filter(b => b.draft).length;
   const IC = {
@@ -551,7 +569,7 @@ function viewHome(){
     <button class="tl s" data-act="exportCSV" aria-label="Xuất CSV"><span class="ic">${IC.down}</span></button>
   </div>${!myBank && S.me ? '<p class="small muted" style="margin:-6px 0 10px">Ô thẻ ngân hàng: thêm số tài khoản để mọi người trả bạn nhanh hơn.</p>' : ''}`;
   const drafts = S.bills.filter(b => b.draft).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-  let body = drafts.length ? `<h2 id="secDraft">bill chờ chia<span class="count">${drafts.length} bill</span></h2><div class="list">${drafts.map(b => { const c = computeBill({ ...b, draft: false }); return `<button class="row" style="border-left-color:var(--sun)" data-act="${canEditBill(b) ? 'splitDraft' : 'openBill'}" data-id="${b.id}">${av(b.payerId)}<span class="grow"><span class="t">${esc(b.merchant || 'Bữa ăn')}</span><span class="s">${fmtDate(b.date)} · ${esc(mName(b.payerId))} trả</span></span><span class="amt-wrap"><span class="amt">${fmt(c.total)}</span><span class="pill" style="background:var(--sun-soft);color:#FFD27A">${canEditBill(b) ? 'chia ngay' : 'chờ ' + esc(mName(b.payerId))}</span></span></button>`; }).join('')}</div>` : '';
+  let body = drafts.length ? `<h2 id="secDraft">bill chờ chia<span class="count">${drafts.length} bill</span></h2><div class="list">${drafts.map(b => { const c = computeBill({ ...b, draft: false }); return wrapRow(`<button class="row" style="border-left-color:var(--sun)" data-act="${canEditBill(b) ? 'splitDraft' : 'openBill'}" data-id="${b.id}">${av(b.payerId)}<span class="grow"><span class="t">${esc(b.merchant || 'Bữa ăn')}</span><span class="s">${fmtDate(b.date)} · ${esc(mName(b.payerId))} trả</span></span><span class="amt-wrap"><span class="amt">${fmt(c.total)}</span><span class="pill" style="background:var(--sun-soft);color:#FFD27A">${canEditBill(b) ? 'chia ngay' : 'chờ ' + esc(mName(b.payerId))}</span></span></button>`, b.id, true); }).join('')}</div>` : '';
   body += seg + `<p class="muted small" style="margin:6px 0 0">${note}</p>`;
   body += `<h2 id="secPay">bạn cần trả<span class="count">${nPay} khoản</span></h2>` + (nPay ? `<div class="list">${payHtml}</div>` : `<div class="empty">Bạn không cần trả ai.</div>`);
   body += `<h2 id="secGet">cần trả bạn<span class="count">${nGet} khoản</span></h2>` + (nGet ? `<div class="list">${getHtml}</div>` : `<div class="empty">Chưa ai nợ bạn.</div>`);
@@ -609,7 +627,7 @@ function exportCSV(){
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `an-chung-${month === 'all' ? 'tat-ca' : month}.csv`;
   document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
-  toast('Đã xuất file CSV (mở được bằng Excel, Google Sheets)');
+  toast('Đã xuất file CSV');
 }
 function viewBills(){
   const months = [...new Set(S.bills.map(b => (b.date || '').slice(0, 7)).filter(Boolean))].sort().reverse();
@@ -629,7 +647,7 @@ function viewBills(){
   </div>
   ${stats}
   <h2>lịch sử<span class="count">${list.length} bill</span></h2>
-  ${list.length ? `<div class="list">${list.map(b => { const c = computeBill(b); return `<button class="row" ${b.draft ? 'style="border-left-color:var(--sun)"' : ''} data-act="openBill" data-id="${b.id}">${av(b.payerId)}<span class="grow"><span class="t">${esc(b.merchant || 'Bữa ăn')}</span><span class="s">${b.draft ? 'nháp · ' : ''}${fmtDate(b.date)} · ${esc(mName(b.payerId))} trả · ${(b.items||[]).length} món</span></span><span class="amt">${fmt(c.total)}</span></button>`; }).join('')}</div>
+  ${list.length ? `<div class="list">${list.map(b => { const c = computeBill(b); return wrapRow(`<button class="row" ${b.draft ? 'style="border-left-color:var(--sun)"' : ''} data-act="openBill" data-id="${b.id}">${av(b.payerId)}<span class="grow"><span class="t">${esc(b.merchant || 'Bữa ăn')}</span><span class="s">${b.draft ? 'nháp · ' : ''}${fmtDate(b.date)} · ${esc(mName(b.payerId))} trả · ${(b.items||[]).length} món</span></span><span class="amt">${fmt(c.total)}</span></button>`, b.id, b.draft); }).join('')}</div>
   <button class="btn sec full" style="margin-top:14px" data-act="exportCSV">xuất CSV</button>`
   : `<div class="empty">Chưa có bill nào.</div>`}`;
 }
@@ -649,7 +667,6 @@ function viewAsk(){
   <div class="composer"><textarea class="in" id="askBox" placeholder="Ví dụ: Bình còn nợ mình bao nhiêu?" rows="1"></textarea><button class="btn" data-act="askSend" ${S.asking?'disabled':''}>Gửi</button></div>`;
 }
 
-/* ---------- sheets ---------- */
 function openSheet(html){ $('#sheetIn').innerHTML = `<div class="grab"></div>` + html; $('#sheet').classList.add('open'); $('#backdrop').classList.add('open'); }
 function closeSheet(){ $('#sheet').classList.remove('open'); $('#backdrop').classList.remove('open'); sheetCtx = null; }
 let sheetCtx = null;
@@ -678,12 +695,11 @@ function openPerson(id, dir, amt){
     const msg = `Hi ${m.name}, khoản ăn chung bạn còn chuyển mình ${fmt(amt)} nhé. Chi tiết xem trong app Ăn chung.`;
     top += `${ck ? `<p><span class="badge">${esc(m.name)} đã check ${fmt(ck.amount)}</span></p>` : ''}<div class="btns" style="margin-top:14px"><button class="btn sec" data-act="copy" data-t="${esc(msg)}">Copy lời nhắc</button></div>`;
   }
-  // history between the two
   const hist = [];
   for (const b of S.bills){ if (b.draft) continue;
     const c = computeBill(b);
-    if (b.payerId === S.me && c.owes[id]) hist.push({ d: b.date, t: `${esc(b.merchant||'Bữa ăn')}: ${esc(m.name)} nợ bạn`, v: c.owes[id], pos: true, bill: b.id });
-    if (b.payerId === id && c.owes[S.me]) hist.push({ d: b.date, t: `${esc(b.merchant||'Bữa ăn')}: bạn nợ ${esc(m.name)}`, v: c.owes[S.me], pos: false, bill: b.id });
+    if (b.payerId === S.me && c.owes[id]) hist.push({ d: b.date, t: `${esc(m.name)} nợ bạn`, v: c.owes[id], pos: true, bill: b.id });
+    if (b.payerId === id && c.owes[S.me]) hist.push({ d: b.date, t: `bạn nợ ${esc(m.name)}`, v: c.owes[S.me], pos: false, bill: b.id });
   }
   for (const p of S.payments){
     if (p.from === S.me && p.to === id) hist.push({ d: p.date, t: `Bạn đã trả ${esc(m.name)}`, v: p.amount, pos: true, pay: p.id, mineSent: true });
@@ -794,7 +810,6 @@ function compressImage(file, max = 480, q = 0.82){
   });
 }
 
-/* ---------- bill editor ---------- */
 let E = null;
 function newEditor(bill){
   const base = bill ? JSON.parse(JSON.stringify(bill)) : null;
@@ -887,7 +902,6 @@ function openDishSheet(i){
   <button class="btn full" style="margin-top:10px" data-act="closeSheet">Xong</button>`);
 }
 
-/* ---------- parsing ---------- */
 function matchMember(name){
   const raw = String(name || '').toLowerCase().trim(); const n = norm(name); if (!n) return null;
   const exactRaw = S.members.filter(m => m.name.toLowerCase().trim() === raw); if (exactRaw.length === 1) return exactRaw[0].id;
@@ -976,7 +990,6 @@ async function runAI(text, image){
   catch (e) { E.busy = false; E.warn = sampleErr(e); renderEditor(); }
 }
 
-/* ---------- chat ---------- */
 function ledgerContext(){
   const L = ledger();
   const lines = [];
@@ -1004,7 +1017,6 @@ async function askSend(q){
   S.asking = false; render();
 }
 
-/* ---------- events ---------- */
 let pressTimer = null, longPressed = false;
 document.addEventListener('click', async ev => {
   const t = ev.target.closest('[data-act]'); if (!t) return;
@@ -1051,7 +1063,6 @@ document.addEventListener('click', async ev => {
       if (x.kind === 'billDebt') {
         if (await safe(store.add('payments', { from: x.from, to: x.to, amount: v, billId: x.billId, date: todayLocal(), at: Date.now() }), 'Đã ghi Done payment')) { if (checkFor(x.from, x.to, x.billId)) safe(store.del('checks', x.from + '__' + x.to + '__' + x.billId)); closeSheet(); }
       } else {
-        // "gộp": pay the net and record an offset so both directions' bills show as settled
         const debts = billDebts(); const mine = debts.filter(d => d.from === S.me && d.to === x.id).reduce((s, d) => s + d.remaining, 0); const theirs = debts.filter(d => d.from === x.id && d.to === S.me).reduce((s, d) => s + d.remaining, 0);
         const offset = Math.min(mine, theirs);
         if (await safe(store.add('payments', { from: S.me, to: x.id, amount: v, offset, date: todayLocal(), at: Date.now() }), 'Đã ghi Done payment')) { if (checkFor(S.me, x.id)) safe(store.del('checks', S.me + '__' + x.id)); closeSheet(); }
@@ -1165,7 +1176,6 @@ document.addEventListener('click', async ev => {
     case 'askSend': { const b = $('#askBox'); const q = b.value; b.value = ''; askSend(q); break; }
   }
 });
-// long-press on a dish opens the multi-person sheet
 document.addEventListener('pointerdown', ev => { const d = ev.target.closest('[data-act="tapDish"]'); if (!d) return; longPressed = false; clearTimeout(pressTimer); pressTimer = setTimeout(() => { longPressed = true; openDishSheet(+d.dataset.i); if (navigator.vibrate) navigator.vibrate(15); }, 480); });
 ['pointerup', 'pointercancel', 'pointerleave'].forEach(n => document.addEventListener(n, () => clearTimeout(pressTimer)));
 document.addEventListener('contextmenu', ev => { if (ev.target.closest('[data-act="tapDish"]')) ev.preventDefault(); });
@@ -1199,7 +1209,6 @@ document.addEventListener('input', ev => {
 });
 document.addEventListener('change', ev => {
   const f = ev.target.dataset.f;
-  // normalise the typed value in place; re-rendering here would swallow the tap on the next button
   if (E && (f === 'vat' || f === 'service' || f === 'discount' || f === 'total')) ev.target.value = E[f] ? E[f].toLocaleString('vi-VN') : '';
   if (E && f === 'item.unit') { const it = E.items[+ev.target.dataset.i]; if (it) ev.target.value = it.unitPrice ? it.unitPrice.toLocaleString('vi-VN') : ''; }
   if (ev.target.id === 'billImg' && E) {
@@ -1217,79 +1226,73 @@ document.addEventListener('keydown', ev => {
   if (ev.key === 'Escape' && $('#sheet').classList.contains('open')) closeSheet();
 });
 
-/* ---------- Swipe to Delete (Vuốt để xoá) ---------- */
-let swpX = 0, swpY = 0, swpEl = null, swpCur = 0;
+/* ---------- Swipe to Delete & Reveal Follow-up Area (Kéo mượt mà từ phải sang trái & hiển thị vùng xóa) ---------- */
+let swpX = 0, swpY = 0, swpWrapper = null, swpCur = 0;
 document.addEventListener('touchstart', e => {
-  const t = e.target.closest('.row[data-id]');
-  if (!t) return;
-  const act = t.dataset.act;
-  // Chỉ cho phép vuốt xoá đối với các dòng bill hoặc bill nháp
-  if (act !== 'openBill' && act !== 'splitDraft') return;
-  
-  swpEl = t;
+  const wrapper = e.target.closest('.row-wrapper');
+  if (!wrapper) return;
+  swpWrapper = wrapper;
   swpX = e.touches[0].clientX;
   swpY = e.touches[0].clientY;
   swpCur = 0;
-  swpEl.style.transition = 'none';
+  const row = swpWrapper.querySelector('.row');
+  if (row) row.style.transition = 'none';
 }, { passive: true });
 
 document.addEventListener('touchmove', e => {
-  if (!swpEl) return;
+  if (!swpWrapper) return;
   const dx = e.touches[0].clientX - swpX;
   const dy = e.touches[0].clientY - swpY;
   
-  // Huỷ thao tác vuốt nếu người dùng đang cuộn dọc
   if (Math.abs(dy) > Math.abs(dx) && swpCur === 0) { 
-    swpEl.style.transform = ''; swpEl = null; return; 
+    swpWrapper = null; return; 
   } 
   
-  // Vuốt sang phải
-  if (dx > 0) { 
+  // Chỉ cho phép kéo sang trái (dx < 0)
+  if (dx < 0) {
     swpCur = dx;
-    swpEl.style.transform = `translateX(${Math.min(dx, 100)}px)`;
-    
-    // Hiệu ứng màu báo hiệu sắp thực hiện hành động xoá khi kéo đủ xa
-    if (dx > 70) {
-      swpEl.style.borderLeftColor = 'var(--t-red)';
-      swpEl.style.opacity = '0.6';
-    } else {
-      swpEl.style.borderLeftColor = '';
-      swpEl.style.opacity = '1';
+    const row = swpWrapper.querySelector('.row');
+    if (row) {
+      // Giới hạn khoảng kéo tối đa là 110px tương ứng với vùng nút xóa
+      const offset = Math.max(dx, -110);
+      row.style.transform = `translateX(${offset}px)`;
     }
   }
 }, { passive: true });
 
 document.addEventListener('touchend', async e => {
-  if (!swpEl) return;
-  const el = swpEl;
-  swpEl = null;
-  el.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
+  if (!swpWrapper) return;
+  const wrapper = swpWrapper;
+  swpWrapper = null;
+  const row = wrapper.querySelector('.row');
+  if (!row) return;
   
-  // Nếu vuốt thả trên 70px thì kích hoạt xoá
-  if (swpCur > 70) {
-    const id = el.dataset.id;
+  row.style.transition = 'transform 0.2s cubic-bezier(0.1, 0.9, 0.2, 1)';
+  
+  // Nếu kéo sang trái quá 60px thì mở hẳn vùng xóa follow-up hoặc thực hiện xóa trực tiếp
+  if (swpCur < -60) {
+    row.style.transform = `translateX(-110px)`;
+    const id = wrapper.dataset.id;
     const b = S.bills.find(x => x.id === id);
     if (b && canEditBill(b)) {
-      if (confirm(`Bạn có chắc chắn muốn xoá bill ${b.draft ? 'nháp ' : ''}này?`)) {
+      if (confirm(`Bạn có chắc chắn muốn xoá bill này?`)) {
         await safe(store.del('bills', id), 'Đã xoá bill');
       }
     } else {
       toast('Bạn không có quyền xoá bill này.');
     }
+    setTimeout(() => { row.style.transform = 'translateX(0px)'; }, 250);
+  } else {
+    // Trả về vị trí cũ nếu kéo chưa đủ khoảng cách
+    row.style.transform = 'translateX(0px)';
   }
-  
-  // Trả item về vị trí cũ
-  el.style.transform = '';
-  el.style.borderLeftColor = '';
-  el.style.opacity = '1';
 });
 
-/* ---------- boot ---------- */
 async function loadAll(silent){
   if (!API_URL || API_URL.indexOf('PASTE_') === 0 || !KEY) { render(); return; }
   try {
     const j = await apiGet({ action: 'all' });
-    if (flushing || OUTBOX.length) { /* đang gửi: tải sau để không mất thay đổi chưa lên máy chủ */ }
+    if (flushing || OUTBOX.length) {}
     for (const c of ['members', 'bills', 'payments', 'checks']) S[c] = j.data[c] || [];
     OUTBOX.forEach(applyOp);
     S.members.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
@@ -1302,7 +1305,6 @@ async function loadAll(silent){
   const editing = E && $('#overlay').classList.contains('open');
   if (!editing) render();
 }
-// tự làm mới khi người khác thêm bill (không làm mới khi đang nhập để khỏi mất chữ)
 async function poll(){
   if (!S.ready || document.visibilityState !== 'visible' || flushing || OUTBOX.length) return;
   if (E || $('#sheet').classList.contains('open')) return;
@@ -1310,8 +1312,6 @@ async function poll(){
 }
 setInterval(poll, 20000);
 document.addEventListener('visibilitychange', poll);
-// v2 dùng chung service worker của app gốc (phạm vi gốc đã bao phủ thư mục /v2/)
-// mở app: hiện ngay dữ liệu lần trước (nếu có), rồi tải bản mới ở nền
 try {
   const c = JSON.parse(localStorage.getItem('anchung.cache') || 'null');
   if (c && c.data && KEY) { for (const k of ['members', 'bills', 'payments', 'checks']) S[k] = c.data[k] || []; S.members.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)); OUTBOX.forEach(applyOp); S.rev = c.rev || 0; sample = c.ai ? makeAI() : null; imgOk = !!sample; S.ready = true; }
