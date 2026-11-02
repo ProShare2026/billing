@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ăn chung · Metro 10</title>
 <meta name="theme-color" content="#06122B">
-<script>try{if(localStorage.getItem('anchung.theme')==='paper'){document.documentElement.dataset.theme='paper';document.querySelector('meta[name=theme-color]').content='#F3F1EC'}}catch(e){}</script>
+<script>try{var th=localStorage.getItem('anchung.theme');if(th==='mono'||th==='paper'){document.documentElement.dataset.theme='mono';document.querySelector('meta[name=theme-color]').content='#F6F5F0'}}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -41,20 +41,23 @@
   box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); color-scheme:dark;
 }
 /* T13 · thử nghiệm: giấy ấm + một sắc xanh tím. Nghĩa nằm ở độ đậm, dấu ± và chữ, không ở màu */
-:root[data-theme="paper"]{
-  --bg:#F3F1EC; --bg-art:none; --surface:#FFF; --sheet:#F3F1EC; --raise:#FFF; --raise-2:#ECEAF6; --press:#ECEAF6; --sw-fg:#FFF;
-  --ink:#14183A; --ink-2:#3A3F66; --muted:#5B6080; --line:#D9DBEE; --line-2:#C9CCE8; --pivot-off:#7A7FA3;
+:root[data-theme="mono"]{
+  /* Thử nghiệm theo ảnh tham chiếu: nền gần trắng, khe trắng, MỘT sắc xanh dừa cạn cho mọi ô; nghĩa nằm ở chữ và dấu ± */
+  --mono:#5565E6;
+  --bg:#F6F5F0; --bg-art:none; --surface:#FFF; --sheet:#F6F5F0; --raise:#FFF; --raise-2:#ECEEFB; --press:#ECEEFB; --sw-fg:#FFF;
+  --ink:#14183A; --ink-2:#3A3F66; --muted:#5B6080; --line:#DCDEEC; --line-2:#CDD0E6; --pivot-off:#7A7FA3;
   --field-bg:#FFF; --field-line:#8E93B8; --field-focus-bg:#FFF; --field-focus-ink:#14183A;
-  --brand:#2F3DB0; --brand-strong:#2F3DB0; --brand-soft:#DCDFF8;
-  --owed:#14183A; --owed-soft:#DCDFF8; --owed-ink:#1E2670;
-  --owe:#2F3DB0; --owe-soft:#2F3DB0; --owe-ink:#FFF;
-  --sun:#4B5BD7; --sun-soft:#DCDFF8; --sun-ink:#1E2670;
-  --go:#2F3DB0; --danger:#14183A; --danger-hot:#14183A; --danger-deep:#3A3F66;
-  --tl-mix:100%; --tl-blue:#4B5BD7; --tl-green:#4B5BD7; --tl-red:#2F3DB0; --tl-gray:#DCDFF8; --tl-orange:#2F3DB0; --tl-gray-ink:#1E2670;
-  --t-cyan:#4B5BD7; --t-magenta:#2F3DB0;
-  --appbar:#14183A; --toast:#2F3DB0; --nav-fade:#F3F1EC;
+  --brand:#3F4FD6; --brand-strong:#5565E6; --brand-soft:#E3E6FB;
+  --owed:#14183A; --owed-soft:#FFF; --owed-ink:#3F4FD6; --owe:#14183A; --owe-soft:#5565E6; --owe-ink:#FFF;
+  --sun:#5565E6; --sun-soft:#E3E6FB; --sun-ink:#2B379E;
+  --go:#5565E6; --danger:#14183A; --danger-hot:#14183A; --danger-deep:#3A3F66;
+  --tl-mix:100%; --tl-blue:#5565E6; --tl-green:#5565E6; --tl-red:#5565E6; --tl-gray:#5565E6; --tl-orange:#5565E6; --tl-gray-ink:#FFF;
+  --t-cyan:#5565E6; --t-magenta:#5565E6; --appbar:#14183A; --toast:#5565E6; --nav-fade:#F6F5F0;
   color-scheme:light;
 }
+[data-theme="mono"] .tl{--tc:var(--mono)!important}
+[data-theme="mono"] .row.owe{border-left-color:var(--mono)} [data-theme="mono"] .row.owed{border-left-color:var(--line-2)}
+[data-theme="mono"] .pill.owed{outline:1px solid var(--brand);outline-offset:-1px}
 html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%;background:var(--bg);overscroll-behavior-y:none}
 *,*::before,*::after{box-sizing:border-box;border-radius:0!important;box-shadow:none!important}
 body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:"Open Sans","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent;font-feature-settings:"tnum" 1;overscroll-behavior-y:none}
@@ -109,7 +112,7 @@ h2 .count{font-family:"Open Sans",sans-serif;font-size:12px;font-weight:600;colo
 .seg button.on{background:var(--raise-2);border:1.5px solid var(--brand);color:var(--ink);font-weight:600}
 /* danh sách */
 .list{display:flex;flex-direction:column;gap:2px}
-#view .list > *{content-visibility:auto;contain-intrinsic-size:auto 64px}
+#view .list.long > *{content-visibility:auto;contain-intrinsic-size:auto 64px}
 .row{display:flex;align-items:center;gap:12px;padding:12px 14px;width:100%;background:var(--surface);border:0;border-left:4px solid transparent;text-align:left;position:relative;color:var(--ink)}
 .row:active{background:var(--press)}
 .row.owe{border-left-color:var(--owe)} .row.owed{border-left-color:var(--owed)}
@@ -146,7 +149,7 @@ h2 .count{font-family:"Open Sans",sans-serif;font-size:12px;font-weight:600;colo
 .av{--c:#555;flex:none;display:inline-grid;place-items:center;width:38px;height:38px;background:var(--c);color:var(--av-ink);font-weight:600;font-size:15px;line-height:1;letter-spacing:-.02em}
 .av.s{width:22px;height:22px;font-size:10px}
 .av.l{width:52px;height:52px;font-size:20px}
-[data-theme="paper"] .av{background:var(--brand-soft);color:var(--owed-ink)}
+[data-theme="mono"] .av{background:var(--mono);color:#FFF}
 /* nút và ô nhập */
 .btn{border:2px solid var(--brand-strong);padding:11px 14px;font-weight:600;background:var(--brand-strong);color:var(--on-brand);min-height:46px;text-transform:lowercase;transition:transform .12s var(--ease)}
 .btn:active{transform:scale(.97)}
@@ -167,7 +170,7 @@ textarea.in{padding:9px 10px;line-height:1.45;min-height:96px;resize:vertical}
 input[type=date].in{text-align:left}
 input[type=date].in::-webkit-date-and-time-value{text-align:left;margin:0}
 input[type=date].in::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.7}
-[data-theme="paper"] input[type=date].in::-webkit-calendar-picker-indicator{filter:none}
+[data-theme="mono"] input[type=date].in::-webkit-calendar-picker-indicator{filter:none}
 select.in{padding-right:30px;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;background-size:5px 5px;background-repeat:no-repeat}
 input.in:focus,textarea.in:focus{border-color:var(--brand);outline:0;background:var(--field-focus-bg);color:var(--field-focus-ink)}
 select.in:focus{border-color:var(--brand);outline:0}
@@ -200,12 +203,12 @@ input[type=date].in:focus::-webkit-calendar-picker-indicator{filter:none}
 .person .av{width:30px;height:30px;font-size:13px}
 .person.on{background:var(--c,var(--brand-strong));color:#FFF}
 .person.on .av{background:rgba(0,0,0,.25);color:#FFF}
-[data-theme="paper"] .person.on{background:var(--brand-strong)}
+[data-theme="mono"] .person.on{background:var(--brand-strong)}
 .person .nm{font-size:12px;font-weight:600;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:auto}
 .person .mn{font-size:11px;opacity:.9;white-space:nowrap}
 .person.off{opacity:.4}
 .dish{display:flex;align-items:center;gap:10px;padding:12px 10px 12px 12px;background:var(--raise);border-left:4px solid transparent}
-[data-theme="paper"] .dish{--sel:var(--brand-strong)!important}
+[data-theme="mono"] .dish{--sel:var(--mono)!important}
 .dish.mine{border-left-color:var(--sel,var(--brand));background:color-mix(in srgb,var(--sel,var(--brand)) 14%,var(--raise))}
 .dish .check{width:24px;height:24px;border:2px solid var(--muted);flex:none;display:grid;place-items:center}
 .dish.mine .check{background:var(--sel,var(--brand));border-color:var(--sel,var(--brand))}
@@ -219,7 +222,7 @@ input[type=date].in:focus::-webkit-calendar-picker-indicator{filter:none}
 /* sheet */
 #backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:30;opacity:0;pointer-events:none;touch-action:none;transition:opacity .2s var(--ease)}
 #backdrop.open{opacity:1;pointer-events:auto}
-[data-theme="paper"] #backdrop{background:rgba(20,24,58,.45)}
+[data-theme="mono"] #backdrop{background:rgba(20,24,58,.45)}
 #sheet{position:fixed;left:0;right:0;bottom:0;z-index:31;background:var(--sheet);border-top:3px solid var(--brand);max-height:90%;overflow:auto;overscroll-behavior:contain;transform:translateY(105%);visibility:hidden;transition:transform .2s var(--ease),visibility 0s .2s;padding:12px 16px calc(24px + env(safe-area-inset-bottom,0px))}
 #sheet.open{transform:none;visibility:visible;transition:transform .2s var(--ease)}
 #sheet .in{max-width:480px;margin:0 auto}
@@ -235,6 +238,7 @@ input[type=date].in:focus::-webkit-calendar-picker-indicator{filter:none}
 .pay-card .kv > .muted:first-child,.card .kv > .muted:first-child{flex-shrink:0;white-space:nowrap}
 .pay-card .kv > :last-child,.card .kv > :last-child{min-width:0;text-align:right;overflow-wrap:anywhere}
 .copy{border:1px solid var(--brand);background:none;color:var(--brand);font-weight:600;padding:5px 10px;min-height:28px;font-size:11px;margin-left:6px;text-transform:lowercase}
+.pay-qr canvas.vqr-sm{width:min(160px,100%)}
 .pay-qr canvas.vqr{display:block;width:min(240px,100%);height:auto;margin:2px auto 10px;image-rendering:pixelated;background:#fff}
 .qr-amt{font-family:var(--light);font-weight:300;font-size:30px;line-height:1.1;text-align:center}
 .qr-note{text-align:center;margin:2px 0 10px;overflow-wrap:anywhere}
@@ -266,9 +270,14 @@ input[type=date].in:focus::-webkit-calendar-picker-indicator{filter:none}
 .tl .nm{position:absolute;left:8px;bottom:6px;right:8px;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tl.bar .ic{inset:0 auto 0 0;width:var(--cell)}
 .tl.bar .ic svg{width:34%;height:34%}
+.tl.m{grid-column:span 2;grid-row:span 2}
+.cluster{grid-column:span 2;grid-row:span 2;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:var(--gap)}
+.tl .ini{position:absolute;left:12px;top:10px;font-family:var(--light);font-size:22px;font-weight:300;opacity:.95}
+.tl .cnt{position:absolute;right:10px;bottom:7px;font-family:var(--light);font-size:26px;font-weight:300;line-height:1}
+.tl.m .nm{left:12px;right:12px;bottom:8px;font-size:13px}
 .tl.bar .nm{left:var(--cell);bottom:auto;top:50%;transform:translateY(-50%);font-size:15px}
 .tl .bd{position:absolute;right:8px;top:7px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:rgba(0,0,0,.3);padding:1px 6px}
-[data-theme="paper"] .tl .bd{background:rgba(255,255,255,.2)}
+[data-theme="mono"] .tl .bd{background:rgba(255,255,255,.2)}
 .tl .big{position:absolute;left:12px;right:12px;top:40%;transform:translateY(-50%);font-family:var(--light);font-weight:300;font-size:clamp(30px,10vw,42px);letter-spacing:-.4px;line-height:1.05;white-space:nowrap}
 .tl .sub{position:absolute;left:12px;top:10px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.95}
 .tl .split{position:absolute;left:12px;right:12px;bottom:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -278,11 +287,10 @@ input[type=date].in:focus::-webkit-calendar-picker-indicator{filter:none}
 .tl .split .zero{opacity:.6}
 .tl.green{--tc:var(--tl-green)}.tl.red{--tc:var(--tl-red)}.tl.orange{--tc:var(--tl-orange)}
 .tl.gray{--tc:var(--tl-gray);color:var(--tl-gray-ink)}
-/* T1: cỡ chữ số dư tính từ bề rộng ô và số ký tự (--n) để không bao giờ bị cắt */
-@supports (font-size:1cqi){
-  .tl.w{container-type:inline-size}
-  .tl .big{font-size:min(42px,calc((100cqi - 24px) / (var(--n,10) * .56)))}
-}
+/* T1: cỡ chữ số tiền tính từ bề rộng ô (suy ra từ --cell, không cần container query) và số ký tự (--n), để không bao giờ bị cắt */
+.tl.w .big{font-size:min(42px,calc((4 * var(--cell) + 3 * var(--gap) - 24px) / (var(--n,10) * .56)))}
+.tl.m .big{font-size:min(30px,calc((2 * var(--cell) + var(--gap) - 24px) / (var(--n,10) * .56)))}
+.tl.m .big{top:50%;transform:translateY(-58%)}
 .home-people .person{width:auto;min-width:88px;max-width:160px;min-height:88px}
 .home-people .person .mn{font-size:12px;font-weight:600;opacity:1}
 .focus-chip{display:inline-flex;align-items:center;gap:8px;background:var(--brand-strong);color:var(--on-brand);font-size:12px;padding:7px 10px;border:0;margin:4px 0 0}
@@ -390,7 +398,7 @@ function makeAI(){
 /* ---------- data layer ---------- */
 const S = { members: [], bills: [], payments: [], checks: [], me: null, tab: 'home', homeMode: 'bill', month: 'all', billFilter: 'all', chat: [], ready: false, rev: 0, saving: false, needKey: false, loadErr: '' };
 let sample = null, imgOk = false, dbWritable = true;
-try { const ss = JSON.parse(localStorage.getItem('anchung.session') || 'null'); if (ss && ss.memberId && ss.token) { S.me = ss.memberId; S.token = ss.token; } localStorage.removeItem('anchung.me'); const hm = localStorage.getItem('anchung.mode'); if (hm === 'bill' || hm === 'pair' || hm === 'net') S.homeMode = hm; } catch {}
+try { const ss = JSON.parse(localStorage.getItem('anchung.session') || 'null'); if (ss && ss.memberId && ss.token) { S.me = ss.memberId; S.token = ss.token; } const hm = localStorage.getItem('anchung.mode'); if (hm === 'bill' || hm === 'pair' || hm === 'net') S.homeMode = hm; } catch {}
 /* Lưu kiểu "lạc quan": cập nhật màn hình ngay, gửi lên Apps Script ở nền theo hàng đợi.
    Mất mạng thì hàng đợi được giữ trên máy và tự gửi lại khi có mạng. */
 let DATAV = 0; const MEMO = { v: -1 };
@@ -437,6 +445,16 @@ async function flush(){
   }
 }
 window.addEventListener('online', flush);
+// Chạy song song nhiều tab/bản trên cùng trình duyệt: đăng nhập ở tab này thì tab kia cập nhật theo, không cần tải lại
+window.addEventListener('storage', e => {
+  if (e.key === 'anchung.session') {
+    let ss = null; try { ss = JSON.parse(e.newValue || 'null'); } catch {}
+    if (ss && ss.memberId && ss.token) { S.me = ss.memberId; S.token = ss.token; } else { S.me = null; S.token = ''; }
+    if (S.token && sheetCtx && sheetCtx.kind === 'login') closeSheet();
+    if (!E) { loadAll(true); render(); }
+  }
+  if (e.key === 'anchung.theme') { if (e.newValue === 'mono') document.documentElement.dataset.theme = 'mono'; else delete document.documentElement.dataset.theme; }
+});
 function syncBadge(){
   const el = document.getElementById('sync'); if (!el) return;
   const n = OUTBOX.length;
@@ -458,7 +476,7 @@ const canEditMember = m => !!S.me && S.me === m.id;
 function setSession(memberId, token){ S.me = memberId; S.token = token; try { localStorage.setItem('anchung.session', JSON.stringify({ memberId, token })); } catch {} }
 function logout(silent){ S.me = null; S.token = ''; try { localStorage.removeItem('anchung.session'); } catch {} if (!silent) { closeSheet(); render(); } }
 function needLogin(){ if (S.me && S.token) return false; toast('Chọn bạn là ai và nhập PIN trước.'); openPickMe(); return true; }
-const PIN_ERR = { wrong_pin: 'PIN chưa đúng.', pin_locked: 'Nhập sai quá nhiều lần. Đợi 15 phút rồi thử lại.', no_pin: 'Người này chưa có PIN.', bad_pin: 'PIN cần 4–12 ký tự.', no_member: 'Không tìm thấy thành viên này (có thể chưa đồng bộ xong).' };
+const PIN_ERR = { wrong_pin: 'PIN chưa đúng.', pin_locked: 'Nhập sai quá nhiều lần. Đợi 15 phút rồi thử lại.', no_pin: 'Người này chưa có PIN.', bad_pin: 'PIN cần 4–12 ký tự.', no_member: 'Không tìm thấy thành viên này (có thể chưa đồng bộ xong).', has_pin: 'Tên này đã có PIN (vừa tạo ở máy hoặc bản khác). Nhập đúng PIN đó để đăng nhập.' };
 const mName = id => mById(id)?.name || 'Thành viên cũ';
 // Chữ cái đầu và màu được tính một lần cho mỗi phiên bản dữ liệu: trùng chữ thì dùng 2 chữ, trùng màu thì đổi màu khác
 let IDV = -1, IDC = { ini: {}, col: {} };
@@ -602,31 +620,42 @@ function viewHome(){
     payHtml = pay.map(r => transferRow(r.id, r.v, 'pay')).join(''); getHtml = get.map(r => transferRow(r.id, r.v, 'get')).join('');
   }
   const net = sumGet - sumPay;
-  const people = Object.entries(per).map(([id, v]) => ({ id, v })).filter(x => x.v).sort((a, b) => Math.abs(b.v) - Math.abs(a.v)).slice(0, 20);
+  const people = Object.entries(per).map(([id, v]) => ({ id, v })).filter(x => x.v).sort((a, b) => Math.abs(b.v) - Math.abs(a.v)).slice(0, 8);
   const drafts = S.bills.filter(b => b.draft).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
   const IC = {
     plus: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
     cam: '<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
     sync: '<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7L20 8"/><path d="M20 3v5h-5"/></svg>',
     card: '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13"/><path d="M3 10h18M7 15h4"/></svg>',
-    hour: '<svg viewBox="0 0 24 24"><path d="M7 3h10M7 21h10M8 3c0 5 8 6 8 9s-8 4-8 9M16 3c0 5-8 6-8 9"/></svg>'
+    hour: '<svg viewBox="0 0 24 24"><path d="M7 3h10M7 21h10M8 3c0 5 8 6 8 9s-8 4-8 9M16 3c0 5-8 6-8 9"/></svg>',
+    bill: '<svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>'
   };
   const me = mById(S.me); const myBank = me && (me.account || me.qr);
   const tone = net > 0 ? 'green' : net < 0 ? 'red' : 'gray';
+  // Khảm ô Lumia: ô số dư rộng; cụm 2×2 tác vụ + một ô vừa (bill chờ chia, hoặc người lệch nhiều nhất); các ô người còn lại nằm dưới danh sách nợ
+  const personTile = p => `<button class="tl m" style="--tc:${mColor(p.id)}" data-act="personTile" data-id="${p.id}" data-v="${p.v}" aria-label="${esc(mName(p.id))}: ${p.v > 0 ? 'nợ bạn' : 'bạn nợ'} ${fmt(Math.abs(p.v))}"><span class="ini">${esc(iniOf(p.id))}</span><span class="bd">${p.v > 0 ? 'nợ bạn' : 'bạn nợ'}</span>${bigAmt((p.v > 0 ? '+' : '−') + fmt(Math.abs(p.v)))}<span class="nm">${esc(mName(p.id))}</span></button>`;
+  const lead = drafts.length ? null : people[0];
+  const rest = drafts.length ? people : people.slice(1);
+  const side = drafts.length
+    ? `<button class="tl m orange" data-act="scrollTo" data-target="secDraft"><span class="ic">${IC.hour}</span><span class="cnt">${drafts.length}</span><span class="nm">bill chờ chia</span></button>`
+    : lead ? personTile(lead)
+    : `<button class="tl m" data-act="tab" data-tab="bills"><span class="ic">${IC.bill}</span><span class="nm">lịch sử bill</span></button>`;
   const tiles = `<div class="start">
     <div class="tl w ${tone}"><span class="sub">số dư của bạn</span><span class="bd" id="liveBadge">${liveText()}</span>${bigAmt((net > 0 ? '+' : net < 0 ? '−' : '') + fmt(Math.abs(net)))}
       <span class="split"><button data-act="scrollTo" data-target="secPay"><span>bạn cần trả · ${nPay} khoản</span><b class="${nPay ? '' : 'zero'}">${nPay ? '−' : ''}${fmt(sumPay)}</b></button><button data-act="scrollTo" data-target="secGet"><span>cần trả bạn · ${nGet} khoản</span><b class="${nGet ? '' : 'zero'}">${nGet ? '+' : ''}${fmt(sumGet)}</b></button></span></div>
-    <button class="tl s" data-act="newBill" aria-label="Thêm bill"><span class="ic">${IC.plus}</span><span class="nm" aria-hidden="true">thêm</span></button>
-    <button class="tl s" data-act="newBillPhoto" aria-label="Chụp bill"><span class="ic">${IC.cam}</span><span class="nm" aria-hidden="true">chụp</span></button>
-    <button class="tl s" data-act="reload" aria-label="Làm mới"><span class="ic">${IC.sync}</span><span class="nm" aria-hidden="true">làm mới</span></button>
-    <button class="tl s" data-act="editMember" data-id="${S.me}" aria-label="Số tài khoản của tôi"><span class="ic">${IC.card}</span><span class="nm" aria-hidden="true">STK</span></button>
-    ${drafts.length ? `<button class="tl bar orange" data-act="scrollTo" data-target="secDraft"><span class="ic">${IC.hour}</span><span class="nm">${drafts.length} bill chờ chia</span></button>` : ''}
+    <div class="cluster">
+      <button class="tl s" data-act="newBill" aria-label="Thêm bill"><span class="ic">${IC.plus}</span><span class="nm" aria-hidden="true">thêm</span></button>
+      <button class="tl s" data-act="newBillPhoto" aria-label="Chụp bill"><span class="ic">${IC.cam}</span><span class="nm" aria-hidden="true">chụp</span></button>
+      <button class="tl s" data-act="reload" aria-label="Làm mới"><span class="ic">${IC.sync}</span><span class="nm" aria-hidden="true">làm mới</span></button>
+      <button class="tl s" data-act="editMember" data-id="${S.me}" aria-label="Số tài khoản của tôi"><span class="ic">${IC.card}</span><span class="nm" aria-hidden="true">STK</span></button>
+    </div>
+    ${side}
   </div>
-  ${people.length ? `<div class="people home-people" aria-label="Theo từng người">${people.map(p => `<button class="person" data-act="personTile" data-id="${p.id}" data-v="${p.v}" aria-label="${esc(mName(p.id))}: ${p.v > 0 ? 'nợ bạn' : 'bạn nợ'} ${fmt(Math.abs(p.v))}">${av(p.id)}<span class="nm">${esc(mName(p.id))}</span><span class="mn ${p.v > 0 ? 'pos' : 'neg'}">${p.v > 0 ? '+' : '−'}${fmt(Math.abs(p.v))}</span></button>`).join('')}</div>` : ''}
   ${!myBank ? '<p class="small muted" style="margin:0 0 10px">Ô STK: thêm số tài khoản hoặc ảnh mã QR để mọi người trả bạn nhanh hơn.</p>' : ''}`;
   let body = seg + `<p class="muted small" style="margin:6px 0 0">${note}</p>`;
   body += `<h2 id="secPay">bạn cần trả<span class="count">${nPay} khoản</span></h2>` + (nPay ? `<div class="list">${payHtml}</div>` : `<div class="empty">Bạn không cần trả ai.</div>`);
   body += `<h2 id="secGet">cần trả bạn<span class="count">${nGet} khoản</span></h2>` + (nGet ? `<div class="list">${getHtml}</div>` : `<div class="empty">Chưa ai nợ bạn.</div>`);
+  if (rest.length) body += `<h2 id="secPeople">theo từng người<span class="count">${rest.length} người</span></h2><div class="start">${rest.map(personTile).join('')}</div>`;
   if (drafts.length) body += `<h2 id="secDraft">bill chờ chia<span class="count">${drafts.length} bill</span></h2><div class="list">${drafts.map(b => { const c = computeBill({ ...b, draft: false }); return `<div class="sw" data-swipe="bill" data-id="${b.id}" data-ok="${canEditBill(b) ? 1 : 0}"><div class="sw-del" aria-hidden="true"><span class="sw-lbl"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg><b>xoá</b></span></div><button class="row sw-fg" style="border-left-color:var(--sun)" data-act="${canEditBill(b) ? 'splitDraft' : 'openBill'}" data-id="${b.id}">${av(b.payerId)}<span class="grow"><span class="t">${esc(b.merchant || 'Bữa ăn')}</span><span class="s">${[fmtDate(b.date), esc(mName(b.payerId)) + ' trả'].filter(Boolean).join(' · ')}</span></span><span class="amt-wrap"><span class="amt">${fmt(c.total)}</span><span class="pill sun">${canEditBill(b) ? 'chia ngay' : 'chờ chia'}</span></span></button></div>`; }).join('')}</div>`;
   return tiles + body;
 }
@@ -703,7 +732,7 @@ function viewBills(){
   </div>
   ${stats}
   <h2>lịch sử<span class="count">${list.length} bill</span></h2>
-  ${list.length ? `<div class="list">${list.map(b => { const c = computeBill(b); return `<div class="sw" data-swipe="bill" data-id="${b.id}" data-ok="${canEditBill(b) ? 1 : 0}"><div class="sw-del" aria-hidden="true"><span class="sw-lbl"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg><b>xoá</b></span></div><button class="row sw-fg" ${b.draft ? 'style="border-left-color:var(--sun)"' : ''} data-act="openBill" data-id="${b.id}">${av(b.payerId)}<span class="grow"><span class="t">${esc(b.merchant || 'Bữa ăn')}</span><span class="s">${[b.draft ? 'nháp' : '', fmtDate(b.date), esc(mName(b.payerId)) + ' trả', (b.items||[]).length + ' món'].filter(Boolean).join(' · ')}</span></span><span class="amt">${fmt(c.total)}</span></button></div>`; }).join('')}</div>
+  ${list.length ? `<div class="list${list.length > 40 ? ' long' : ''}">${list.map(b => { const c = computeBill(b); return `<div class="sw" data-swipe="bill" data-id="${b.id}" data-ok="${canEditBill(b) ? 1 : 0}"><div class="sw-del" aria-hidden="true"><span class="sw-lbl"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg><b>xoá</b></span></div><button class="row sw-fg" ${b.draft ? 'style="border-left-color:var(--sun)"' : ''} data-act="openBill" data-id="${b.id}">${av(b.payerId)}<span class="grow"><span class="t">${esc(b.merchant || 'Bữa ăn')}</span><span class="s">${[b.draft ? 'nháp' : '', fmtDate(b.date), esc(mName(b.payerId)) + ' trả', (b.items||[]).length + ' món'].filter(Boolean).join(' · ')}</span></span><span class="amt">${fmt(c.total)}</span></button></div>`; }).join('')}</div>
   <button class="btn sec full" style="margin-top:14px" data-act="exportCSV">xuất CSV</button>`
   : `<div class="empty">Chưa có bill nào.</div>`}`;
 }
@@ -721,7 +750,7 @@ function goneRows(L){
 
 function viewAsk(){
   if (!sample) return `<h2>Hỏi về công nợ</h2><div class="empty">Chưa bật AI. Thêm GEMINI_API_KEY trong Thuộc tính tập lệnh của Apps Script để dùng tính năng này.</div>`;
-  const chips = ['Ai đang nợ mình?', 'Mình cần trả ai, bao nhiêu?', 'Tháng này ai trả tiền nhiều nhất?', 'Mình đã ăn gì ở bill gần nhất?'];
+  const chips = ['Ai đang nợ mình?', 'Mình cần trả ai, STK gì?', 'Tháng này ai trả tiền nhiều nhất?', 'Mình đã ăn gì ở bill gần nhất?'];
   return `<h2>hỏi về công nợ</h2><p class="muted small">Hỏi bằng tiếng Việt thường ngày. Câu trả lời dựa trên bill và thanh toán của nhóm.</p>
   <div class="chat">${S.chat.map(m => `<div class="msg ${m.role==='user'?'u':'a'}">${esc(m.content)}</div>`).join('')}<span id="chatEnd"></span></div>
   ${S.chat.length ? '' : `<div class="chips">${chips.map(c => `<button class="chip" data-act="askChip">${esc(c)}</button>`).join('')}</div>`}
@@ -1645,18 +1674,18 @@ return text => { const q = new M.index(-1, M.QRErrorCorrectLevel.M); q.addData(t
 // Thứ tự có nghĩa: tên dài/cụ thể đứng trước tên có thể nằm bên trong nó.
 const BANKS = [
   ['546034', 'CAKE by VPBank', 'cake'], ['546035', 'Ubank by VPBank', 'ubank'],
-  ['970438', 'BaoViet Bank', 'baovietbank', 'baoviet'], ['970449', 'LPBank', 'lpbank', 'lienvietpostbank', 'lienviet', 'locphat'],
-  ['970436', 'Vietcombank', 'vietcombank', 'ngoaithuong', 'vcb'], ['970415', 'VietinBank', 'vietinbank', 'congthuong', 'vietin', 'ctg'],
-  ['970418', 'BIDV', 'bidv', 'dautuvaphattrien'], ['970405', 'Agribank', 'agribank', 'nongnghiep', 'agri'],
+  ['970438', 'BaoViet Bank', 'baovietbank', 'baoviet'], ['970449', 'LPBank', 'lpbank', 'lienvietpostbank', 'lienviet', 'locphat', 'lpb'],
+  ['970436', 'Vietcombank', 'vietcombank', 'ngoaithuong', 'vcb'], ['970415', 'VietinBank', 'vietinbank', 'congthuong', 'vietin', 'ctg', 'vtb'],
+  ['970418', 'BIDV', 'bidv', 'dautuvaphattrien'], ['970405', 'Agribank', 'agribank', 'nongnghiep', 'agri', 'vba', 'agr'],
   ['970407', 'Techcombank', 'techcombank', 'kythuong', 'tcb'], ['970422', 'MB', 'mbbank', 'quandoi', 'mb'],
   ['970416', 'ACB', 'acb', 'achau'], ['970432', 'VPBank', 'vpbank', 'thinhvuong', 'vpb'],
   ['970423', 'TPBank', 'tpbank', 'tienphong', 'tpb'], ['970403', 'Sacombank', 'sacombank', 'saigonthuongtin', 'stb'],
   ['970437', 'HDBank', 'hdbank', 'hdb'], ['970441', 'VIB', 'vib', 'quocte'], ['970443', 'SHB', 'saigonhanoi', 'shb'],
   ['970431', 'Eximbank', 'eximbank', 'eib'], ['970426', 'MSB', 'maritime', 'hanghai', 'msb'], ['970448', 'OCB', 'phuongdong', 'ocb'],
-  ['970440', 'SeABank', 'seabank', 'dongnama'], ['970428', 'Nam A Bank', 'namabank', 'nama'], ['970409', 'Bac A Bank', 'bacabank', 'baca'],
-  ['970412', 'PVcomBank', 'pvcombank', 'pvcom'], ['970425', 'ABBank', 'abbank', 'anbinh'], ['970454', 'BVBank', 'bvbank', 'vietcapital', 'banviet', 'vccb'],
+  ['970440', 'SeABank', 'seabank', 'dongnama', 'seab', 'ssb'], ['970428', 'Nam A Bank', 'namabank', 'nama', 'nab'], ['970409', 'Bac A Bank', 'bacabank', 'baca', 'bab'],
+  ['970412', 'PVcomBank', 'pvcombank', 'pvcom', 'pvcb'], ['970425', 'ABBank', 'abbank', 'anbinh', 'abb'], ['970454', 'BVBank', 'bvbank', 'vietcapital', 'banviet', 'vccb', 'bvb'],
   ['970429', 'SCB', 'scb'], ['970419', 'NCB', 'quocdan', 'ncb'], ['970452', 'KienlongBank', 'kienlongbank', 'kienlong', 'klb'],
-  ['970427', 'VietABank', 'vietabank', 'vieta'], ['970433', 'Vietbank', 'vietbank'], ['970430', 'PGBank', 'pgbank', 'pgb'],
+  ['970427', 'VietABank', 'vietabank', 'vieta', 'vab'], ['970433', 'Vietbank', 'vietbank', 'vbb'], ['970430', 'PGBank', 'pgbank', 'pgb'],
   ['970400', 'Saigonbank', 'saigonbank', 'sgb'], ['970406', 'DongA Bank', 'dongabank', 'donga'], ['970424', 'Shinhan Bank', 'shinhan'], ['970457', 'Woori Bank', 'woori']
 ];
 function bankOf(name){
@@ -1677,7 +1706,22 @@ function vietQR(bin, acc, amount, note){
   return p + crc16(p);
 }
 // Người nhận có tạo được VietQR không: cần ngân hàng nhận ra được và số tài khoản hợp lệ
-function vqrTarget(m){ const b = bankOf(m && m.bank); const acc = cleanAcc(m && m.account); return b && /^[0-9A-Za-z]{4,19}$/.test(acc) ? { ...b, acc } : null; }
+function vqrStatus(m){
+  const bank = String((m && m.bank) || '').trim(), acc = cleanAcc(m && m.account);
+  if (!bank && !acc) return { msg: '' };
+  if (!bank) return { msg: 'Thêm tên ngân hàng để mọi người có mã QR kèm sẵn số tiền.' };
+  const k = bankOf(bank);
+  if (!k) return { msg: `Chưa nhận ra ngân hàng “${bank}”. Chọn trong danh sách gợi ý (ví dụ Vietcombank, MB, Techcombank) để có mã QR; hiện mọi người vẫn copy được số tài khoản.` };
+  if (!acc) return { msg: `Nhận ra ${k.label}. Thêm số tài khoản để có mã QR.` };
+  if (!/^[0-9A-Za-z]{4,19}$/.test(acc)) return { msg: 'Số tài khoản cần 4–19 chữ số hoặc chữ cái, không có ký tự khác.' };
+  return { ok: true, t: { ...k, acc } };
+}
+function vqrTarget(m){ const st = vqrStatus(m); return st.ok ? st.t : null; }
+function vqrStatusHtml(m){
+  const st = vqrStatus(m);
+  if (!st.ok) return st.msg ? `<p class="small muted" style="margin:-4px 0 8px">${esc(st.msg)}</p>` : '';
+  return `<div class="pay-card pay-qr" style="margin:4px 0 10px"><canvas class="vqr vqr-sm" width="296" height="296" role="img" aria-label="Mã VietQR nhận tiền" data-bin="${st.t.bin}" data-acc="${esc(st.t.acc)}" data-amt="0" data-note="" data-name="${esc(m.name || '')}"></canvas><p class="small muted" style="margin:0;text-align:center">Nhận ra ${esc(st.t.label)} · ${esc(st.t.acc)}. Đây là mã mọi người quét khi trả bạn; lúc trả, mã sẽ kèm sẵn số tiền. Quét thử bằng app ngân hàng để kiểm tra tên.</p></div>`;
+}
 const QRCACHE = new Map();
 function qrRows(text){ let r = QRCACHE.get(text); if (!r) { r = QRLite(text); QRCACHE.set(text, r); if (QRCACHE.size > 30) QRCACHE.delete(QRCACHE.keys().next().value); } return r; }
 function drawQR(cv){
@@ -1737,6 +1781,11 @@ function popLayer(){
   popTk = later(() => { popTk = null; NAVSKIP++; history.back(); });
 }
 window.addEventListener('popstate', () => { if (NAVSKIP) { NAVSKIP--; return; } navBack(true); });
+function setTheme(t){
+  if (t === 'mono') document.documentElement.dataset.theme = 'mono'; else delete document.documentElement.dataset.theme;
+  try { localStorage.setItem('anchung.theme', t); } catch {}
+  document.querySelector('meta[name=theme-color]').content = t === 'mono' ? '#F6F5F0' : '#06122B';
+}
 function navBack(fromPop){
   if ($('#sheet').classList.contains('open')) { closeSheet(fromPop); if (E) renderEditor(); return; }
   if (E && $('#overlay').classList.contains('open')) {
@@ -1909,12 +1958,12 @@ function openMemberForm(id){
   <div class="grid2"><label class="field"><span>Ngân hàng</span><input class="in" id="mfBank" value="${esc(m.bank)}" placeholder="Vietcombank" list="bankList" autocomplete="off"></label>
   <label class="field"><span>Số tài khoản</span><input class="in" id="mfAcc" value="${esc(m.account)}" inputmode="numeric"></label></div>
   <datalist id="bankList">${BANKS.map(b => `<option value="${b[1]}">`).join('')}</datalist>
-  <p class="small muted" id="mfBankHint" style="margin:-4px 0 0" aria-live="polite">${m.bank ? (bankOf(m.bank) ? `Nhận ra ${bankOf(m.bank).label}: mọi người sẽ có mã QR kèm sẵn số tiền.` : 'Chưa nhận ra ngân hàng này; mọi người vẫn copy được số tài khoản.') : ''}</p>
+  <div id="mfVqr" aria-live="polite">${vqrStatusHtml(m)}</div>
   <label class="field"><span>Chủ tài khoản</span><input class="in" id="mfHolder" value="${esc(m.holder)}" placeholder="NGUYEN VAN BINH"></label>
   <label class="field"><span>Ghi chú</span><input class="in" id="mfNote" value="${esc(m.payNote)}" placeholder="Ví dụ: ghi nội dung 'an trua'"></label>
   <label class="field"><span>Ảnh mã QR</span><input class="in" type="file" accept="image/*" id="mfQr"></label>
   <p class="small muted" id="mfQrHint" aria-live="polite" style="margin:-4px 0 6px">Tải ảnh mã QR ngân hàng: app tự điền ngân hàng và số tài khoản.</p>
-  <div id="mfQrPrev">${m.qr ? `<img src="${m.qr}" alt="" style="max-width:160px;border-radius:8px"><br><button class="btn ghost" data-act="rmQr">Bỏ ảnh QR</button>` : ''}</div>
+  <div id="mfQrPrev">${m.qr ? `<img src="${m.qr}" alt="" style="max-width:160px;border-radius:8px"><br><button class="btn ghost" data-act="rmQr">xoá ảnh QR</button>` : ''}</div>
   <div class="btns" style="margin-top:14px">${id ? `<button class="btn sec" data-act="delMember" data-id="${id}">Xoá</button><button class="btn sec" data-act="changePin">Đổi PIN</button>` : ''}<button class="btn" data-act="saveMember">Lưu</button></div>`);
   setTimeout(() => $('#mfName')?.focus(), 250);
 }
@@ -2117,6 +2166,8 @@ function ledgerContext(){
   lines.push('Khoản còn nợ theo từng bill: ' + (billDebts().filter(d => d.remaining > 0).map(d => `${mName(d.from)} nợ ${mName(d.to)} ${d.remaining} (bill ${d.bill.merchant || 'Bữa ăn'} ${d.date}${d.paid ? ', đã trả ' + d.paid : ''})`).join('; ') || 'không có'));
   const pairs = []; for (const a of S.members) for (const b of S.members) { if (a.id < b.id) { const v = Math.round(L.owe(a.id, b.id)); if (v) pairs.push(v > 0 ? `${a.name} nợ ${b.name} ${v}` : `${b.name} nợ ${a.name} ${-v}`); } }
   lines.push('Nếu gộp theo từng cặp (bù trừ hai chiều): ' + (pairs.join('; ') || 'không có'));
+  lines.push('Thông tin nhận tiền: ' + S.members.map(m => { const t = vqrTarget(m); return `${m.name}: ${m.bank ? 'ngân hàng ' + (t ? t.label : m.bank) : 'chưa khai ngân hàng'}${m.account ? ', STK ' + m.account : ', chưa khai STK'}${m.holder ? ', chủ TK ' + m.holder : ''}`; }).join('; '));
+  lines.push(`Số ${mName(S.me)} cần trả theo cặp người (cách tính mặc định khi trả tiền): ` + (S.members.filter(m => m.id !== S.me).map(m => ({ m, v: Math.round(L.owe(S.me, m.id)) })).filter(x => x.v > 0).map(x => `trả ${x.m.name} ${x.v}`).join('; ') || 'không cần trả ai'));
   lines.push('Bill nháp chưa chia (chưa tính nợ): ' + (S.bills.filter(b => b.draft).map(b => `${b.date} ${b.merchant || 'Bữa ăn'} do ${mName(b.payerId)} trả ${Math.round(computeBill({ ...b, draft: false }).total)}`).join('; ') || 'không có'));
   lines.push('Bill đã chia (mới nhất trước):');
   [...S.bills].filter(b => !b.draft).sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 80).forEach(b => { const c = computeBill(b); lines.push(`- ${b.date} | ${b.merchant || 'Bữa ăn'} | ${mName(b.payerId)} trả ${Math.round(c.total)} bằng ${METHODS[b.method] || '?'} | món: ${(b.items || []).map(it => `${it.name} ${it.amount} (${Object.keys(it.shares || {}).filter(k => it.shares[k] > 0).map(mName).join(', ')})`).join('; ')} | phải trả: ${Object.entries(c.owes).map(([k, v]) => `${mName(k)} ${v}`).join(', ')}`); });
@@ -2127,7 +2178,7 @@ function ledgerContext(){
 async function askSend(q){
   q = (q || '').trim(); if (!q || !sample || S.asking) return;
   S.chat.push({ role: 'user', content: q }); S.chat.push({ role: 'assistant', content: 'Đang xem sổ…' }); S.asking = true; render();
-  const rules = `Bạn là trợ lý tra cứu công nợ ăn chung của một nhóm. Người hỏi là ${mName(S.me)}; "mình", "tôi" nghĩa là người này. Chỉ trả lời dựa trên dữ liệu dưới đây, bằng tiếng Việt, ngắn gọn, số tiền viết dạng 120.000đ. Nếu dữ liệu không đủ để trả lời, nói rõ là không có.\n\nDỮ LIỆU:\n${ledgerContext()}`;
+  const rules = `Bạn là trợ lý tra cứu công nợ ăn chung của một nhóm. Người hỏi là ${mName(S.me)}; "mình", "tôi" nghĩa là người này. Chỉ trả lời dựa trên dữ liệu dưới đây, bằng tiếng Việt, ngắn gọn, số tiền viết dạng 120.000đ. Nếu dữ liệu không đủ để trả lời, nói rõ là không có. Khi được hỏi số tài khoản hoặc STK để trả ai: trả lời ngân hàng, STK, chủ tài khoản của người đó, kèm số tiền người hỏi cần trả người đó theo cách tính cặp người (bù trừ hai chiều). Không dùng cách gộp tối ưu toàn nhóm trừ khi người hỏi yêu cầu rõ. Nếu người đó chưa khai STK thì nói rõ và gợi ý nhắn hỏi trực tiếp.\n\nDỮ LIỆU:\n${ledgerContext()}`;
   const turns = [{ role: 'user', content: rules }, { role: 'assistant', content: 'Đã hiểu.' }, ...S.chat.slice(0, -1).slice(-10)];
   const idx = S.chat.length - 1;
   try {
@@ -2158,7 +2209,12 @@ document.addEventListener('click', async ev => {
       else { const p1 = $('#pinNew').value, p2 = $('#pinNew2').value; if (p1.length < 4 || p1.length > 12) { toast(PIN_ERR.bad_pin); break; } if (p1 !== p2) { toast('Hai lần nhập PIN chưa khớp.'); break; } body = { action: 'setPin', memberId: mid, pin: p1 }; }
       t.disabled = true; t.textContent = 'Đang kiểm tra…';
       try { const j = await apiPost(body); setSession(j.memberId, j.token); const m = mById(mid); if (m) m.hasPin = true; cacheLocal(); closeSheet(); render(); toast('Xin chào ' + mName(mid)); flush(); }
-      catch (e) { toast(PIN_ERR[e && e.error] || 'Chưa đăng nhập được, kiểm tra mạng.'); t.disabled = false; t.textContent = a === 'doLogin' ? 'Đăng nhập' : 'Tạo PIN và đăng nhập'; }
+      catch (e) {
+        toast(PIN_ERR[e && e.error] || 'Chưa đăng nhập được, kiểm tra mạng.');
+        // dữ liệu trên máy cũ hơn máy chủ: người này đã có PIN, chuyển sang form đăng nhập
+        if (e && e.error === 'has_pin') { const m = mById(mid); if (m) m.hasPin = true; openLogin(mid); loadAll(true); break; }
+        t.disabled = false; t.textContent = a === 'doLogin' ? 'Đăng nhập' : 'Tạo PIN và đăng nhập';
+      }
       break;
     }
     case 'doChangePin': {
@@ -2208,7 +2264,7 @@ document.addEventListener('click', async ev => {
       showUndo(`Đã xoá bill “${b.merchant || 'Bữa ăn'}”`, () => store.set('bills', id, copy)); break;
     }
     case 'editMember': { const m = id && mById(id); if (m && !canEditMember(m)) { openMemberView(id); break; } openMemberForm(id); break; }
-    case 'rmQr': sheetCtx.qr = ''; $('#mfQrPrev').innerHTML = ''; break;
+    case 'rmQr': { sheetCtx.qr = ''; $('#mfQrPrev').innerHTML = ''; const fi = $('#mfQr'); if (fi) fi.value = ''; const h = $('#mfQrHint'); if (h) h.textContent = 'Đã xoá ảnh. Ngân hàng và số tài khoản vẫn được giữ; bấm “lưu” để áp dụng.'; break; }
     case 'saveMember': {
       if (sheetCtx.id && needLogin()) break;
       const name = $('#mfName').value.trim(); if (!name) { toast('Nhập tên thành viên.'); break; }
@@ -2239,15 +2295,12 @@ document.addEventListener('click', async ev => {
       <button class="row" data-act="pickMe"><span class="grow"><span class="t">đổi tài khoản</span><span class="s">${S.me ? 'đang dùng: ' + esc(mName(S.me)) : 'chưa đăng nhập'}</span></span></button>
       ${S.me ? '<button class="row" data-act="changePin"><span class="grow"><span class="t">đổi PIN</span></span></button>' : ''}
       <button class="row" data-act="exportCSV"><span class="grow"><span class="t">xuất CSV</span><span class="s">theo tháng đang chọn ở tab bill</span></span></button>
-      <button class="row" data-act="toggleTheme"><span class="grow"><span class="t">giao diện: ${document.documentElement.dataset.theme === 'paper' ? 'giấy một màu (thử nghiệm)' : 'metro tối'}</span><span class="s">chạm để đổi sang ${document.documentElement.dataset.theme === 'paper' ? 'metro tối' : 'giấy một màu (thử nghiệm)'}</span></span></button>
+      <button class="row" data-act="toggleTheme"><span class="grow"><span class="t">giao diện: ${document.documentElement.dataset.theme === 'mono' ? 'một màu (thử nghiệm)' : 'metro tối'}</span><span class="s">chạm để đổi sang ${document.documentElement.dataset.theme === 'mono' ? 'metro tối' : 'một màu (thử nghiệm)'}</span></span></button>
       <a class="row" href="../" style="text-decoration:none"><span class="grow"><span class="t">mở giao diện cũ</span><span class="s">cùng dữ liệu, cùng tài khoản</span></span></a>
     </div><p class="small muted" style="margin-top:12px">Ăn chung · giao diện Metro (beta)</p>`); break;
     case 'toggleTheme': {
-      const paper = document.documentElement.dataset.theme !== 'paper';
-      if (paper) document.documentElement.dataset.theme = 'paper'; else delete document.documentElement.dataset.theme;
-      try { localStorage.setItem('anchung.theme', paper ? 'paper' : 'metro'); } catch {}
-      document.querySelector('meta[name=theme-color]').content = paper ? '#F3F1EC' : '#06122B';
-      closeSheet(); toast(paper ? 'Đã chuyển sang giao diện giấy một màu' : 'Đã chuyển về giao diện metro tối'); break;
+      const mono = document.documentElement.dataset.theme !== 'mono'; setTheme(mono ? 'mono' : 'metro');
+      closeSheet(); toast(mono ? 'Đã chuyển sang giao diện một màu' : 'Đã chuyển về giao diện metro tối'); break;
     }
     case 'closeEditor': if (!E.items.length || confirm('Bỏ bill đang nhập?')) closeEditor(); break;
     case 'edMode': E.mode = t.dataset.v; E.warn = ''; renderEditor(); break;
@@ -2319,7 +2372,7 @@ document.addEventListener('contextmenu', ev => { if (ev.target.closest('[data-ac
 
 document.addEventListener('input', ev => {
   if (ev.target.id === 'payAmt') { const v = parseMoney(ev.target.value); const cv = document.querySelector('canvas.vqr'); if (cv && v > 0) { cv.dataset.amt = Math.round(v); const q = $('#qrAmt'); if (q) q.textContent = fmt(v); clearTimeout(drawQR._t); drawQR._t = setTimeout(() => drawQR(cv), 120); } return; }
-  if (ev.target.id === 'mfBank') { const h = $('#mfBankHint'); if (h) { const k = bankOf(ev.target.value); h.textContent = !ev.target.value.trim() ? '' : k ? `Nhận ra ${k.label}: mọi người sẽ có mã QR kèm sẵn số tiền.` : 'Chưa nhận ra ngân hàng này; mọi người vẫn copy được số tài khoản.'; } return; }
+  if (ev.target.id === 'mfBank' || ev.target.id === 'mfAcc') { const box = $('#mfVqr'); if (box) { box.innerHTML = vqrStatusHtml({ bank: $('#mfBank').value, account: $('#mfAcc').value, name: ($('#mfName') || {}).value }); const cv = box.querySelector('canvas.vqr'); if (cv) { clearTimeout(drawQR._f); drawQR._f = setTimeout(() => drawQR(cv), 150); } } return; }
   const f = ev.target.dataset.f; if (!f) return;
   if (f === 'month') { S.month = ev.target.value; render(); return; }
   if (f === 'billFilter') { S.billFilter = ev.target.value; render(); return; }
@@ -2364,7 +2417,7 @@ document.addEventListener('change', ev => {
       if (!sheetCtx || sheetCtx.kind !== 'member') return;
       const v = parseVietQR(text);
       if (text && !v) { ev.target.value = ''; if (hint) hint.textContent = 'Đây không phải mã nhận tiền ngân hàng (VietQR), nên ảnh không được lưu.'; return; }
-      sheetCtx.qr = u; $('#mfQrPrev').innerHTML = `<img src="${u}" alt="" style="max-width:160px"><br><button class="btn ghost" data-act="rmQr">bỏ ảnh QR</button>`;
+      sheetCtx.qr = u; $('#mfQrPrev').innerHTML = `<img src="${u}" alt="" style="max-width:160px"><br><button class="btn ghost" data-act="rmQr">xoá ảnh QR</button>`;
       if (!hint) return;
       if (v) {
         const typed = cleanAcc($('#mfAcc').value);
