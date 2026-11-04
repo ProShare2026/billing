@@ -462,11 +462,13 @@ function syncBadge(){
   el.style.display = n ? 'block' : 'none';
   const lb = document.getElementById('liveBadge'); if (lb) lb.textContent = liveText();
 }
-function cacheLocal(){ try { localStorage.setItem('anchung.cache', JSON.stringify({ rev: S.rev, ai: !!sample, data: { members: S.members, bills: S.bills.map(b => b.image && String(b.image).indexOf('data:') === 0 ? { ...b, image: '' } : b), payments: S.payments, checks: S.checks } })); } catch {} }
+function cacheLocal(){ try { localStorage.setItem('anchung.cache', JSON.stringify({ rev: S.rev, ai: !!sample, admins: S.admins || [], data: { members: S.members, bills: S.bills.map(b => b.image && String(b.image).indexOf('data:') === 0 ? { ...b, image: '' } : b), payments: S.payments, checks: S.checks } })); } catch {} }
 async function safe(p, okMsg){
   try { await p; if (okMsg) toast(okMsg); return true; } catch { toast('Chưa lưu được.'); return false; }
 }
 const mById = id => S.members.find(m => m.id === id);
+const visible = () => S.members.filter(m => !m.hidden);
+const isAdmin = () => !!S.me && (S.admins || []).includes(S.me);
 /* ---------- quyền (giao diện chỉ ẩn nút; backend mới là nơi kiểm tra thật) ---------- */
 const billOwner = b => b.createdBy || b.payerId;
 // T3: bill mà cả người tạo lẫn người trả đều đã rời nhóm thì thành viên nào cũng xử lý được (Apps Script cần cùng quy tắc)
@@ -585,7 +587,7 @@ function localBanner(){ return ''; }
 function liveText(){ return navigator.onLine === false ? 'ngoại tuyến' : OUTBOX.length ? 'đang gửi ' + OUTBOX.length : S.syncErr ? 'chưa cập nhật' : S.fromCache ? 'đang cập nhật' : 'đã đồng bộ'; }
 function viewHome(){
   if (!S.members.length) return `<div class="tile tile-top t-accent"><div class="tile-label">BẮT ĐẦU</div><div><div class="tile-amount">chào team</div><span class="tile-sub">thêm những người hay đi ăn cùng nhau, rồi ghi bill đầu tiên</span></div></div><button class="btn full" style="margin-top:10px" data-act="tab" data-tab="members">thêm thành viên</button>`;
-  if (!mById(S.me)) return `<h2>bạn là ai trong nhóm?</h2><p class="muted small" style="margin:0 0 10px">Chọn tên của bạn rồi nhập PIN (lần đầu thì tạo PIN).</p><div class="list">${S.members.map(m => `<button class="row" data-act="pickLogin" data-id="${m.id}">${av(m.id)}<span class="grow"><span class="t">${esc(m.name)}</span><span class="s">${m.hasPin ? 'đã có PIN' : 'chưa có PIN'}</span></span></button>`).join('')}</div>`;
+  if (!mById(S.me)) return `<h2>bạn là ai trong nhóm?</h2><p class="muted small" style="margin:0 0 10px">Chọn tên của bạn rồi nhập PIN (lần đầu thì tạo PIN).</p><div class="list">${[...visible(), ...S.members.filter(m => m.hidden)].map(m => `<button class="row" data-act="pickLogin" data-id="${m.id}" ${m.hidden ? 'style="opacity:.6"' : ''}>${av(m.id)}<span class="grow"><span class="t">${esc(m.name)}</span><span class="s">${m.hidden ? 'đã ẩn · ' : ''}${m.hasPin ? 'đã có PIN' : 'chưa có PIN'}</span></span></button>`).join('')}</div>`;
 
   const segBtn = (v, label) => `<button role="tab" aria-selected="${S.homeMode === v}" class="${S.homeMode === v ? 'on' : ''}" data-act="homeMode" data-v="${v}">${label}</button>`;
   const seg = `<div class="seg" role="tablist" aria-label="Cách tính nợ">${segBtn('bill', 'từng bill')}${segBtn('pair', 'cặp người')}${segBtn('net', 'gộp tối ưu')}</div>`;
@@ -738,9 +740,13 @@ function viewBills(){
 }
 function viewMembers(){
   const L = ledger();
-  return `<h2>thành viên<span class="count">${S.members.length} người</span></h2><button class="btn sec full" style="margin-bottom:10px" data-act="editMember">+ thêm người</button>` +
-  (S.members.length ? `<div class="list">${S.members.map(m => { const n = Math.round(L.net[m.id] || 0); const hasPay = m.qr || m.account; return `<button class="row" data-act="editMember" data-id="${m.id}">${av(m.id)}<span class="grow"><span class="t">${esc(m.name)}${m.id===S.me?' <span class="badge g">bạn</span>':''}</span>${!hasPay || !m.hasPin ? `<span class="s">${[hasPay ? '' : 'chưa có thông tin nhận tiền', m.hasPin ? '' : 'chưa có PIN'].filter(Boolean).join(' · ')}</span>` : ''}</span><span class="amt ${n>0?'pos':n<0?'neg':'muted'}">${n===0?'0đ':(n>0?'+':'−')+fmt(Math.abs(n))}</span></button>`; }).join('')}</div>`
-  : `<div class="empty">Chưa có ai. Thêm những người hay đi ăn cùng nhau.</div>`) + goneRows(L);
+  const row = m => { const n = Math.round(L.net[m.id] || 0); const hasPay = m.qr || m.account; const isAd = (S.admins || []).includes(m.id);
+    const sub = m.hidden ? 'đã ẩn bởi ' + esc(mName(m.hiddenBy)) + (m.hiddenAt ? ' · ' + new Date(m.hiddenAt).toLocaleDateString('vi-VN') : '') : [hasPay ? '' : 'chưa có thông tin nhận tiền', m.hasPin ? '' : 'chưa có PIN'].filter(Boolean).join(' · ');
+    return `<button class="row" data-act="editMember" data-id="${m.id}" ${m.hidden ? 'style="opacity:.6"' : ''}>${av(m.id)}<span class="grow"><span class="t">${esc(m.name)}${m.id===S.me?' <span class="badge g">bạn</span>':''}${isAd?' <span class="badge">quản trị</span>':''}</span>${sub ? `<span class="s">${sub}</span>` : ''}</span><span class="amt ${n>0?'pos':n<0?'neg':'muted'}">${n===0?'0đ':(n>0?'+':'−')+fmt(Math.abs(n))}</span></button>`; };
+  const vis = visible(), hid = S.members.filter(m => m.hidden);
+  return `<h2>thành viên<span class="count">${vis.length} người</span></h2>${isAdmin() ? '<p class="small muted" style="margin:-4px 0 8px">Bạn là quản trị viên: chạm vào một người để ẩn, hiện lại hoặc xoá.</p>' : ''}<button class="btn sec full" style="margin-bottom:10px" data-act="editMember">+ thêm người</button>` +
+  (vis.length ? `<div class="list">${vis.map(row).join('')}</div>` : `<div class="empty">Chưa có ai. Thêm những người hay đi ăn cùng nhau.</div>`) +
+  (hid.length ? `<h2>đã ẩn<span class="count">${hid.length} người</span></h2><div class="list">${hid.map(row).join('')}</div><p class="small muted">Người đã ẩn không hiện khi chia món hay chọn người trả. Lịch sử bill của họ vẫn giữ nguyên.</p>` : '') + goneRows(L);
 }
 function goneRows(L){
   const gone = Object.entries(L.net).filter(([id, v]) => !mById(id) && Math.round(v) !== 0);
@@ -1916,7 +1922,7 @@ function openBill(id){
 function openPickMe(){
   if (!S.members.length) { S.tab = 'members'; render(); return; }
   openSheet(`<h3>Bạn là ai?</h3><p class="small muted" style="margin-top:-6px">Chọn tên của bạn và nhập PIN. Đổi sang người khác cũng cần PIN của người đó.</p>
-  <div class="list">${S.members.map(m => `<button class="row" data-act="pickLogin" data-id="${m.id}">${av(m.id)}<span class="grow"><span class="t">${esc(m.name)}</span><span class="s">${m.hasPin ? 'Đã có PIN' : 'Chưa có PIN, chọn để tạo'}</span></span>${m.id===S.me?'<span class="badge g">đang dùng</span>':''}</button>`).join('')}</div>
+  <div class="list">${[...visible(), ...S.members.filter(m => m.hidden)].map(m => `<button class="row" data-act="pickLogin" data-id="${m.id}" ${m.hidden ? 'style="opacity:.6"' : ''}>${av(m.id)}<span class="grow"><span class="t">${esc(m.name)}</span><span class="s">${m.hidden ? 'đã ẩn · ' : ''}${m.hasPin ? 'Đã có PIN' : 'Chưa có PIN, chọn để tạo'}</span></span>${m.id===S.me?'<span class="badge g">đang dùng</span>':''}</button>`).join('')}</div>
   ${S.me ? `<button class="btn sec full" style="margin-top:12px" data-act="logout">Đăng xuất khỏi ${esc(mName(S.me))}</button>` : ''}`);
 }
 function openLogin(id){
@@ -1943,10 +1949,21 @@ function openChangePin(){
     <button class="btn full" data-act="doChangePin">Đổi PIN</button>
     <p class="small muted">Đổi PIN sẽ đăng xuất các máy khác và huỷ liên kết bot Zalo của bạn (liên kết lại bằng PIN mới).</p>`);
 }
+function adminBlock(m){
+  if (!isAdmin() || !m) return '';
+  const ds = billDebts().filter(d => d.remaining > 0);
+  const pay = ds.filter(d => d.from === m.id).reduce((a, d) => a + d.remaining, 0), get = ds.filter(d => d.to === m.id).reduce((a, d) => a + d.remaining, 0);
+  const used = S.bills.some(b => b.payerId === m.id || (b.items || []).some(it => (it.shares || {})[m.id] > 0)) || S.payments.some(p => p.from === m.id || p.to === m.id);
+  return `<h2>quản trị</h2>
+    ${m.hidden ? `<button class="btn full" data-act="hideMember" data-id="${m.id}" data-v="0">hiện lại trong nhóm</button>`
+      : `<button class="btn sec full" data-act="hideMember" data-id="${m.id}" data-v="1" data-pay="${pay}" data-get="${get}">ẩn khỏi nhóm</button>`}
+    ${!used && m.id !== S.me ? `<button class="btn red full" style="margin-top:8px" data-act="delMember" data-id="${m.id}">xoá hẳn (chưa có dữ liệu)</button>` : ''}
+    <p class="small muted">${pay || get ? `${esc(m.name)} ${pay ? 'còn nợ ' + fmt(pay) : ''}${pay && get ? ', ' : ''}${get ? 'còn được nợ ' + fmt(get) : ''}. Ẩn không xoá các khoản này.` : 'Ẩn thì người này không hiện khi chia món nữa, lịch sử vẫn giữ.'}</p>`;
+}
 function openMemberView(id){
   const m = mById(id); if (!m) return;
   openSheet(`<div style="display:flex;align-items:center;gap:12px">${av(id,'l')}<div><h3 style="margin:0"><span class="keep">${esc(m.name)}</span></h3><div class="small muted">${m.hasPin ? 'Đã có PIN' : 'Chưa có PIN'}</div></div></div>
-    ${payInfoHtml(m)}<p class="small muted">Chỉ ${esc(m.name)} mới sửa được thông tin này.</p>`);
+    ${payInfoHtml(m)}<p class="small muted">Chỉ ${esc(m.name)} mới sửa được thông tin này.</p>${adminBlock(m)}`);
 }
 function openMemberForm(id){
   const m = id ? mById(id) : { name: '', bank: '', account: '', holder: '', payNote: '', qr: '' };
@@ -1964,7 +1981,7 @@ function openMemberForm(id){
   <label class="field"><span>Ảnh mã QR</span><input class="in" type="file" accept="image/*" id="mfQr"></label>
   <p class="small muted" id="mfQrHint" aria-live="polite" style="margin:-4px 0 6px">Tải ảnh mã QR ngân hàng: app tự điền ngân hàng và số tài khoản.</p>
   <div id="mfQrPrev">${m.qr ? `<img src="${m.qr}" alt="" style="max-width:160px;border-radius:8px"><br><button class="btn ghost" data-act="rmQr">xoá ảnh QR</button>` : ''}</div>
-  <div class="btns" style="margin-top:14px">${id ? `<button class="btn sec" data-act="delMember" data-id="${id}">Xoá</button><button class="btn sec" data-act="changePin">Đổi PIN</button>` : ''}<button class="btn" data-act="saveMember">Lưu</button></div>`);
+  <div class="btns" style="margin-top:14px">${id ? `<button class="btn sec" data-act="delMember" data-id="${id}">Xoá</button><button class="btn sec" data-act="changePin">Đổi PIN</button>` : ''}<button class="btn" data-act="saveMember">Lưu</button></div>${id ? adminBlock(mById(id)) : ''}`);
   setTimeout(() => $('#mfName')?.focus(), 250);
 }
 function compressImage(file, max = 480, q = 0.82){
@@ -2009,7 +2026,7 @@ function edInput(){
     ${sample ? `<button class="btn full" style="margin-top:8px" data-act="aiPhoto" ${E.busy?'disabled':''}>${E.busy?'Đang đọc bill… (5–30 giây)':'Đọc bill bằng AI'}</button><p class="small muted">AI chỉ tạo bản nháp. Bạn kiểm tra lại từng món bên dưới trước khi chia.</p>` : '<p class="small muted">Nhập các món ở danh sách bên dưới.</p>'}`;
   else src = `<p class="small muted" style="margin:4px 0">Nhập từng món ở danh sách bên dưới.</p>`;
   const diff = (+E.total > 0) ? (+E.total - (c.sub + (+E.vat||0) + (+E.service||0) - (+E.discount||0))) : 0;
-  const payers = S.members.map(m => `<option value="${m.id}" ${m.id===E.payerId?'selected':''}>${esc(m.name)}</option>`).join('');
+  const payers = S.members.filter(m => !m.hidden || m.id === E.payerId).map(m => `<option value="${m.id}" ${m.id===E.payerId?'selected':''}>${esc(m.name)}</option>`).join('');
   return `${aiNote}
   <div class="seg" style="margin-top:14px"><button class="${E.mode==='text'?'on':''}" data-act="edMode" data-v="text">Gõ nhanh</button><button class="${E.mode==='manual'?'on':''}" data-act="edMode" data-v="manual">Từng món</button><button class="${E.mode==='photo'?'on':''}" data-act="edMode" data-v="photo">Chụp bill</button></div>
   <div style="margin-top:10px">${src}</div>
@@ -2040,11 +2057,11 @@ function sumHtml(c, diff){
 function refreshSum(){ const el = $('#edSum'); if (!el) return; const c = edTotals(); const diff = (+E.total > 0) ? (+E.total - (c.sub + (+E.vat||0) + (+E.service||0) - (+E.discount||0))) : 0; el.innerHTML = sumHtml(c, diff); }
 
 function edSplit(){
-  if (!E.participants) E.participants = S.members.map(m => m.id);
+  if (!E.participants) E.participants = visible().map(m => m.id);
   if (!E.sel || !E.participants.includes(E.sel)) E.sel = E.participants[0] || null;
   const c = edTotals();
   const selColor = E.sel ? mColor(E.sel) : 'var(--blue)';
-  const people = S.members.map(m => { const inB = E.participants.includes(m.id); const share = m.id === E.payerId ? c.raw[m.id] : c.owes[m.id]; return `<button style="--c:${m.color || 'var(--brand)'}" class="person ${m.id===E.sel?'on':''} ${inB?'':'off'}" data-act="${inB?'selPerson':'togglePart'}" data-id="${m.id}" aria-pressed="${m.id===E.sel}">${av(m.id)}<span class="nm">${esc(m.name)}</span><span class="mn">${inB ? fmt(share || 0) : 'vắng'}</span></button>`; }).join('');
+  const people = S.members.filter(m => !m.hidden || E.participants.includes(m.id) || m.id === E.payerId).map(m => { const inB = E.participants.includes(m.id); const share = m.id === E.payerId ? c.raw[m.id] : c.owes[m.id]; return `<button style="--c:${m.color || 'var(--brand)'}" class="person ${m.id===E.sel?'on':''} ${inB?'':'off'}" data-act="${inB?'selPerson':'togglePart'}" data-id="${m.id}" aria-pressed="${m.id===E.sel}">${av(m.id)}<span class="nm">${esc(m.name)}</span><span class="mn">${inB ? fmt(share || 0) : 'vắng'}</span></button>`; }).join('');
   const dishes = E.items.map((it, i) => {
     const ids = Object.entries(it.shares).filter(([, v]) => v > 0).map(([k]) => k);
     const mine = E.sel && it.shares[E.sel] > 0;
@@ -2072,11 +2089,12 @@ function openDishSheet(i){
 /* ---------- parsing ---------- */
 function matchMember(name){
   const raw = String(name || '').toLowerCase().trim(); const n = norm(name); if (!n) return null;
-  const exactRaw = S.members.filter(m => m.name.toLowerCase().trim() === raw); if (exactRaw.length === 1) return exactRaw[0].id;
+  const pool = visible();
+  const exactRaw = pool.filter(m => m.name.toLowerCase().trim() === raw); if (exactRaw.length === 1) return exactRaw[0].id;
   if (['tôi','mình','tui','tớ','me','i'].includes(raw)) return S.me && mById(S.me) ? S.me : null;
-  const exact = S.members.filter(m => norm(m.name) === n); if (exact.length === 1) return exact[0].id;
-  const last = S.members.filter(m => norm(m.name).split(/\s+/).pop() === n); if (last.length === 1) return last[0].id;
-  if (n.length >= 3) { const pre = S.members.filter(m => norm(m.name).startsWith(n)); if (pre.length === 1) return pre[0].id; }
+  const exact = pool.filter(m => norm(m.name) === n); if (exact.length === 1) return exact[0].id;
+  const last = pool.filter(m => norm(m.name).split(/\s+/).pop() === n); if (last.length === 1) return last[0].id;
+  if (n.length >= 3) { const pre = pool.filter(m => norm(m.name).startsWith(n)); if (pre.length === 1) return pre[0].id; }
   return null;
 }
 function quickParse(text){
@@ -2132,7 +2150,7 @@ function applyParsed(p, fromAI){
   renderEditor();
 }
 function aiPrompt(text){
-  const names = S.members.map(m => m.name).join(', ');
+  const names = visible().map(m => m.name).join(', ');
   return `Bạn đọc hoá đơn hoặc ghi chú bữa ăn tiếng Việt và trả về DUY NHẤT một JSON object, không giải thích.
 Thành viên nhóm: ${names}. Người đang nhập: ${mName(S.me)} (nếu văn bản nói "tôi", "mình", "tui" thì là người này).
 Quy ước: "45k" = 45000; "1tr2" = 1200000; "45.000" = 45000. Bỏ qua dòng tiền khách đưa, tiền thừa. VAT, phí phục vụ, phí ship là phụ phí, không phải món. Khuyến mãi, giảm giá, dòng số âm là discount (số dương).
@@ -2277,8 +2295,8 @@ document.addEventListener('click', async ev => {
     case 'delMember': {
       const used = S.bills.some(b => b.payerId === id || (b.items || []).some(it => (it.shares || {})[id] > 0)) || S.payments.some(p => p.from === id || p.to === id);
       if (used) { toast('Người này đã có trong bill hoặc thanh toán nên không xoá được.'); break; }
-      if (!S.me || S.me !== id) { toast('Chỉ chính người đó được xoá hồ sơ của mình.'); break; }
-      if (confirm('Xoá thành viên này?')) { if (await safe(store.del('members', id), 'Đã xoá')) { logout(true); closeSheet(); render(); } } break;
+      if (!S.me || (S.me !== id && !isAdmin())) { toast('Chỉ chính người đó hoặc quản trị viên được xoá thành viên.'); break; }
+      if (confirm('Xoá thành viên này?')) { if (await safe(store.del('members', id), 'Đã xoá')) { if (id === S.me) logout(true); closeSheet(); render(); } } break;
     }
     case 'newBill': if (needLogin()) break; openEditor(null); break;
     case 'newBillPhoto': if (needLogin()) break; openEditor(null); E.mode = 'photo'; renderEditor(); setTimeout(() => $('#billImg')?.click(), 0); break;
@@ -2309,6 +2327,17 @@ document.addEventListener('click', async ev => {
     case 'aiPhoto': { const f = $('#billImg')?.files?.[0] || E.imageFile; if (!f) { toast('Chọn hoặc chụp ảnh bill trước.'); break; } runAI('', f); break; }
     case 'addItem': E.items.push({ _k: uid(), name: '', qty: 1, unitPrice: 0, amount: 0, shares: {} }); renderEditor(); setTimeout(() => { const ins = document.querySelectorAll('[data-f="item.name"]'); ins[ins.length - 1]?.focus(); }, 0); break;
     case 'undoDel': { const fn = UNDO; UNDO = null; $('#undoBar').classList.remove('show'); if (fn) { fn(); toast('Đã hoàn tác'); } break; }
+    case 'hideMember': {
+      if (needLogin()) break;
+      if (!isAdmin()) { toast('Chỉ quản trị viên được ẩn hoặc hiện thành viên.'); break; }
+      const hide = t.dataset.v === '1'; const m = mById(id); if (!m) break;
+      const pay = +t.dataset.pay || 0, get = +t.dataset.get || 0;
+      if (hide && !confirm(`Ẩn ${m.name} khỏi nhóm?` + (pay || get ? `\n\n${m.name} ${pay ? 'còn nợ ' + fmt(pay) : ''}${pay && get ? ', ' : ''}${get ? 'còn được nợ ' + fmt(get) : ''}. Các khoản này vẫn giữ trong sổ.` : ''))) break;
+      t.disabled = true;
+      try { const j = await apiPost({ action: 'setHidden', memberId: id, hidden: hide, token: S.token }); const k = S.members.findIndex(x => x.id === id); if (k >= 0) { S.members[k] = { ...S.members[k], ...j.data, id }; if (!hide) { delete S.members[k].hidden; delete S.members[k].hiddenBy; delete S.members[k].hiddenAt; } } DATAV++; S.rev = j.rev; cacheLocal(); closeSheet(); render(); toast(hide ? 'Đã ẩn ' + m.name : 'Đã hiện lại ' + m.name); }
+      catch (e) { t.disabled = false; toast((e && e.reason) || (e && e.error === 'need_login' ? 'Phiên đăng nhập hết hạn, đăng nhập lại.' : 'Chưa thực hiện được, kiểm tra mạng.')); }
+      break;
+    }
     case 'rmItem': E.items.splice(i, 1); renderEditor(); break;
     case 'toSplit': {
       E.items = E.items.filter(it => it.amount > 0 || (it.name || '').trim());
@@ -2528,7 +2557,7 @@ async function loadAll(silent){
     for (const c of ['members', 'bills', 'payments', 'checks']) S[c] = j.data[c] || []; DATAV++;
     OUTBOX.forEach(applyOp);
     S.members.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
-    S.rev = j.rev; sample = j.config && j.config.ai ? makeAI() : null; imgOk = !!sample;
+    S.rev = j.rev; sample = j.config && j.config.ai ? makeAI() : null; imgOk = !!sample; S.admins = (j.config && j.config.admins) || [];
     S.ready = true; S.loadErr = ''; S.needKey = false; S.syncErr = false; S.fromCache = false; cacheLocal();
   } catch (e) {
     if (e && e.error === 'unauthorized') { S.needKey = true; KEY = ''; try { localStorage.removeItem('anchung.key'); } catch {} if (!silent) toast('Sai mã nhóm.'); }
@@ -2550,7 +2579,7 @@ document.addEventListener('visibilitychange', poll);
 // mở app: hiện ngay dữ liệu lần trước (nếu có), rồi tải bản mới ở nền
 try {
   const c = JSON.parse(localStorage.getItem('anchung.cache') || 'null');
-  if (c && c.data && KEY) { for (const k of ['members', 'bills', 'payments', 'checks']) S[k] = c.data[k] || []; DATAV++; S.fromCache = true; S.members.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)); OUTBOX.forEach(applyOp); S.rev = c.rev || 0; sample = c.ai ? makeAI() : null; imgOk = !!sample; S.ready = true; }
+  if (c && c.data && KEY) { for (const k of ['members', 'bills', 'payments', 'checks']) S[k] = c.data[k] || []; DATAV++; S.fromCache = true; S.members.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)); OUTBOX.forEach(applyOp); S.rev = c.rev || 0; sample = c.ai ? makeAI() : null; imgOk = !!sample; S.admins = c.admins || []; S.ready = true; }
 } catch {}
 render();
 loadAll();
